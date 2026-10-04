@@ -1,0 +1,6 @@
+{
+  "name": "Stationery Shop - Hệ Thống Dịch Vụ Bán Văn Phòng Phẩm",
+  "description": "Website dịch vụ bán văn phòng phẩm trực tuyến hoàn chỉnh với phân hệ Khách hàng, Nhân viên, Quản trị viên, Quản lý kho, Đơn hàng, Ví tiền và Báo cáo.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
