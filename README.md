@@ -1,10 +1,8 @@
-# Stationery Shop - Website Dịch Vụ Bán Văn Phòng Phẩm
+# Tây Thi Stationery - Website Dịch Vụ Bán Văn Phòng Phẩm
 
 Dự án phục vụ môn học: **Phát triển phần mềm hướng dịch vụ**  
 Đề tài: **Phát triển website dịch vụ bán văn phòng phẩm trực tuyến**  
-Tên hệ thống: **Stationery Shop**
-
-Hệ thống được phát triển dựa trên kiến trúc và công nghệ của repository tham khảo `Tri-hpn/Canteen-Goo` (React + Express REST API + MongoDB / JSON Storage Fallback) và chuyển đổi toàn diện sang nghiệp vụ bán văn phòng phẩm.
+Tên hệ thống: **Tây Thi Stationery**
 
 ---
 
