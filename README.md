@@ -1,6 +1,6 @@
 # Tây Thi Stationery - Website Dịch Vụ Bán Văn Phòng Phẩm
 
-Dự án phục vụ môn học: **Phát triển phần mềm hướng dịch vụ**  
+Dự án phục vụ môn học: **Các vấn đề hiện đại của Công nghệ phần mềm**  
 Đề tài: **Phát triển website dịch vụ bán văn phòng phẩm trực tuyến**  
 Tên hệ thống: **Tây Thi Stationery**
 
