@@ -53,7 +53,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAuthModal }) => {
         </div>
       </div>
 
-      {/* Role Switcher Bar for grading & live demonstration */}
+      {/* Role Switcher Bar for grading & live demonstration
       <div className="role-switcher-banner">
         <div className="container role-switcher-inner">
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -86,7 +86,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAuthModal }) => {
             )}
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Main Sticky Header */}
       <header className="main-header">
@@ -97,9 +97,9 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAuthModal }) => {
               <Layers size={22} />
             </div>
             <div>
-              <span>Stationery<span style={{ color: '#0f172a' }}>Shop</span></span>
+              <span>Tây Thi <span style={{ color: '#0f172a' }}>Stationery</span></span>
               <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', letterSpacing: 0.5, marginTop: -4 }}>
-                VĂN PHÒNG PHẨM CHÍNH HÃNG
+                AI BẢO DÂN VĂN PHÒNG KHÔNG ĐƯỢC CHẤT
               </div>
             </div>
           </Link>

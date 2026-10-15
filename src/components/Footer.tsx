@@ -45,14 +45,14 @@ export const Footer: React.FC = () => {
               <div style={{ width: 36, height: 36, borderRadius: 8, background: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff' }}>
                 <Layers size={20} />
               </div>
-              <span style={{ fontSize: 20, fontWeight: 800, color: '#ffffff' }}>Stationery Shop</span>
+              <span style={{ fontSize: 20, fontWeight: 800, color: '#ffffff' }}>Tây Thi Stationery</span>
             </div>
             <p style={{ fontSize: 14, lineHeight: 1.6, marginBottom: 20, color: '#94a3b8' }}>
               Hệ thống cung cấp giải pháp văn phòng phẩm trọn gói cho học sinh, sinh viên và doanh nghiệp. Chất lượng đỉnh cao, giá thành cạnh tranh nhất thị trường.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <MapPin size={16} color="#38bdf8" /> 72 Lê Thánh Tôn, Bến Nghé, Quận 1, TP. Hồ Chí Minh
+                <MapPin size={16} color="#38bdf8" /> 10 Ngõ 226 Cầu Giấy, Nghĩa Đô, Cầu Giấy, Hà Nội
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <Phone size={16} color="#38bdf8" /> Hotline: 1900 6868 - (028) 3823 4850
