@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ShoppingBag,
@@ -17,6 +17,7 @@ import { useAuth } from '../contexts/AuthContext.tsx';
 import { useCart } from '../contexts/CartContext.tsx';
 import { useNotification } from '../contexts/NotificationContext.tsx';
 import { i18n } from '../i18n.ts';
+import { siteContentAPI } from '../api.ts';
 
 interface HeaderProps {
   onOpenAuthModal?: () => void;
@@ -31,6 +32,13 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAuthModal }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifMenu, setShowNotifMenu] = useState(false);
+  const [siteContent, setSiteContent] = useState<any>(null);
+
+  useEffect(() => {
+    siteContentAPI.get()
+      .then((res) => { if (res.success && res.data) setSiteContent(res.data); })
+      .catch((err) => console.error('Không tải được nội dung header:', err));
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,14 +54,14 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAuthModal }) => {
       {/* Top Bar Announcement */}
       <div className="top-announcement">
         <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span>🎉 Miễn phí vận chuyển cho đơn hàng từ 300.000đ | Giao hỏa tốc 2H tại TP.HCM & Hà Nội</span>
+          <span>{siteContent?.announcementText || '🎉 Miễn phí vận chuyển cho đơn hàng từ 300.000đ | Giao hỏa tốc 2H tại TP.HCM & Hà Nội'}</span>
           <div>
-            <span>Hotline hỗ trợ doanh nghiệp: <strong>1900 6868</strong></span>
+            <span>{siteContent?.hotlineLabel || 'Hotline hỗ trợ doanh nghiệp'}: <strong>{siteContent?.hotline || '1900 6868'}</strong></span>
           </div>
         </div>
       </div>
 
-      {/* Role Switcher Bar for grading & live demonstration
+      {/* Role Switcher Bar for grading & live demonstration */}
       <div className="role-switcher-banner">
         <div className="container role-switcher-inner">
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -86,7 +94,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAuthModal }) => {
             )}
           </div>
         </div>
-      </div> */}
+      </div>
 
       {/* Main Sticky Header */}
       <header className="main-header">
@@ -97,9 +105,9 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAuthModal }) => {
               <Layers size={22} />
             </div>
             <div>
-              <span>Tây Thi <span style={{ color: '#0f172a' }}>Stationery</span></span>
+              <span>{siteContent?.brandName || 'Stationery Shop'}</span>
               <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', letterSpacing: 0.5, marginTop: -4 }}>
-                AI BẢO DÂN VĂN PHÒNG KHÔNG ĐƯỢC CHẤT
+                {siteContent?.brandTagline || 'VĂN PHÒNG PHẨM CHÍNH HÃNG'}
               </div>
             </div>
           </Link>

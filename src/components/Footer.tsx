@@ -1,41 +1,55 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Layers, Phone, Mail, MapPin, ShieldCheck, Truck, RefreshCw, Award } from 'lucide-react';
+import { Layers, Phone, Mail, MapPin, ShieldCheck, Truck, RefreshCw, Award, CheckCircle } from 'lucide-react';
+import { siteContentAPI } from '../api.ts';
 
 export const Footer: React.FC = () => {
+  const [siteContent, setSiteContent] = useState<any>(null);
+
+  useEffect(() => {
+    siteContentAPI.get()
+      .then((res) => { if (res.success && res.data) setSiteContent(res.data); })
+      .catch((err) => console.error('Không tải được nội dung footer:', err));
+  }, []);
+
+  const footerPerks = siteContent?.perks?.length
+    ? siteContent.perks
+    : [
+        { id: 'authentic', title: '100% Chính Hãng', description: 'Cam kết nguồn gốc xuất xứ', icon: 'Award' },
+        { id: 'delivery', title: 'Giao Hỏa Tốc 2H', description: 'Miễn phí từ đơn 300K', icon: 'Truck' },
+        { id: 'returns', title: 'Đổi Trả 7 Ngày', description: 'Thủ tục nhanh chóng tiện lợi', icon: 'CheckCircle' },
+        { id: 'invoice', title: 'Hóa Đơn VAT Đỏ', description: 'Xuất đầy đủ cho doanh nghiệp', icon: 'ShieldCheck' },
+      ];
+  const perkIconMap: Record<string, any> = { Award, Truck, CheckCircle: RefreshCw, ShieldCheck };
+
+  const footerCategories = siteContent?.footerCategories?.length
+    ? siteContent.footerCategories
+    : [
+        { label: 'Bút Bi & Bút Gel', categoryId: 'cat_but' },
+        { label: 'Vở Học Sinh Campus', categoryId: 'cat_vo' },
+        { label: 'Giấy In Double A A4', categoryId: 'cat_giay' },
+        { label: 'Sổ Tay Bìa Da Khóa Từ', categoryId: 'cat_so_tay' },
+        { label: 'Dụng Cụ Văn Phòng Deli', categoryId: 'cat_dung_cu_van_phong' },
+        { label: 'Bìa Còng & File Tài Liệu', categoryId: 'cat_file_bia' },
+      ];
+
   return (
     <footer className="site-footer">
       <div className="container">
-        {/* Top 4 Core Commitments */}
+        {/* Core commitments loaded from MongoDB site content */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 24, paddingBottom: 40, marginBottom: 40, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <Award size={36} color="#38bdf8" />
-            <div>
-              <div style={{ color: '#ffffff', fontWeight: 700, fontSize: 15 }}>100% Chính Hãng</div>
-              <div style={{ fontSize: 13, color: '#94a3b8' }}>Cam kết nguồn gốc xuất xứ</div>
-            </div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <Truck size={36} color="#38bdf8" />
-            <div>
-              <div style={{ color: '#ffffff', fontWeight: 700, fontSize: 15 }}>Giao Hỏa Tốc 2H</div>
-              <div style={{ fontSize: 13, color: '#94a3b8' }}>Miễn phí từ đơn 300K</div>
-            </div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <RefreshCw size={36} color="#38bdf8" />
-            <div>
-              <div style={{ color: '#ffffff', fontWeight: 700, fontSize: 15 }}>Đổi Trả 7 Ngày</div>
-              <div style={{ fontSize: 13, color: '#94a3b8' }}>Thủ tục nhanh chóng tiện lợi</div>
-            </div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <ShieldCheck size={36} color="#38bdf8" />
-            <div>
-              <div style={{ color: '#ffffff', fontWeight: 700, fontSize: 15 }}>Hóa Đơn VAT Đỏ</div>
-              <div style={{ fontSize: 13, color: '#94a3b8' }}>Xuất đầy đủ cho doanh nghiệp</div>
-            </div>
-          </div>
+          {footerPerks.map((perk: any) => {
+            const PerkIcon = perkIconMap[perk.icon] || Award;
+            return (
+              <div key={perk.id || perk.title} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <PerkIcon size={36} color="#38bdf8" />
+                <div>
+                  <div style={{ color: '#ffffff', fontWeight: 700, fontSize: 15 }}>{perk.title}</div>
+                  <div style={{ fontSize: 13, color: '#94a3b8' }}>{perk.description}</div>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         {/* Footer Navigation Columns */}
@@ -45,20 +59,20 @@ export const Footer: React.FC = () => {
               <div style={{ width: 36, height: 36, borderRadius: 8, background: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff' }}>
                 <Layers size={20} />
               </div>
-              <span style={{ fontSize: 20, fontWeight: 800, color: '#ffffff' }}>Tây Thi Stationery</span>
+              <span style={{ fontSize: 20, fontWeight: 800, color: '#ffffff' }}>{siteContent?.brandName || 'Stationery Shop'}</span>
             </div>
             <p style={{ fontSize: 14, lineHeight: 1.6, marginBottom: 20, color: '#94a3b8' }}>
-              Hệ thống cung cấp giải pháp văn phòng phẩm trọn gói cho học sinh, sinh viên và doanh nghiệp. Chất lượng đỉnh cao, giá thành cạnh tranh nhất thị trường.
+              {siteContent?.footerAbout || 'Hệ thống cung cấp giải pháp văn phòng phẩm trọn gói cho học sinh, sinh viên và doanh nghiệp. Chất lượng đỉnh cao, giá thành cạnh tranh nhất thị trường.'}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <MapPin size={16} color="#38bdf8" /> 10 Ngõ 226 Cầu Giấy, Nghĩa Đô, Cầu Giấy, Hà Nội
+                <MapPin size={16} color="#38bdf8" /> {siteContent?.footerAddress || '72 Lê Thánh Tôn, Bến Nghé, Quận 1, TP. Hồ Chí Minh'}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <Phone size={16} color="#38bdf8" /> Hotline: 1900 6868 - (028) 3823 4850
+                <Phone size={16} color="#38bdf8" /> Hotline: {siteContent?.footerPhone || '1900 6868 - (028) 3823 4850'}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <Mail size={16} color="#38bdf8" /> Email: lienhe@stationery.vn
+                <Mail size={16} color="#38bdf8" /> Email: {siteContent?.footerEmail || 'lienhe@stationery.vn'}
               </div>
             </div>
           </div>
@@ -66,12 +80,11 @@ export const Footer: React.FC = () => {
           <div>
             <h4 className="footer-title">Danh Mục Hàng Đầu</h4>
             <ul className="footer-links">
-              <li><Link to="/products?categoryId=cat_but">Bút Bi & Bút Gel</Link></li>
-              <li><Link to="/products?categoryId=cat_vo">Vở Học Sinh Campus</Link></li>
-              <li><Link to="/products?categoryId=cat_giay">Giấy In Double A A4</Link></li>
-              <li><Link to="/products?categoryId=cat_so_tay">Sổ Tay Bìa Da Khóa Từ</Link></li>
-              <li><Link to="/products?categoryId=cat_dung_cu_van_phong">Dụng Cụ Văn Phòng Deli</Link></li>
-              <li><Link to="/products?categoryId=cat_file_bia">Bìa Còng & File Tài Liệu</Link></li>
+              {footerCategories.map((item: any) => (
+                <li key={item.categoryId}>
+                  <Link to={`/products?categoryId=${encodeURIComponent(item.categoryId)}`}>{item.label}</Link>
+                </li>
+              ))}
             </ul>
           </div>
 

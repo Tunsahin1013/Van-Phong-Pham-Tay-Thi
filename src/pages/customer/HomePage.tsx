@@ -24,7 +24,7 @@ import {
   Lamp,
 } from 'lucide-react';
 import { bannerSlides } from '../../bannerSlides.ts';
-import { productsAPI, categoriesAPI, vouchersAPI } from '../../api.ts';
+import { productsAPI, categoriesAPI, vouchersAPI, siteContentAPI } from '../../api.ts';
 import { ProductCard } from '../../components/ProductCard.tsx';
 import { useCart } from '../../contexts/CartContext.tsx';
 import { i18n } from '../../i18n.ts';
@@ -53,12 +53,29 @@ export const HomePage: React.FC = () => {
   const [newArrivals, setNewArrivals] = useState<any[]>([]);
   const [vouchers, setVouchers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [siteContent, setSiteContent] = useState<any>(null);
+  const slides = siteContent?.heroSlides?.length ? siteContent.heroSlides : bannerSlides;
+  const perks = siteContent?.perks?.length ? siteContent.perks : [
+    { id: 'authentic', title: 'Chính Hãng 100%', description: 'Phân phối trực tiếp từ Thiên Long, Deli, Pentel', icon: 'Award' },
+    { id: 'delivery', title: 'Giao Hỏa Tốc 2H', description: 'Miễn phí giao hàng nội thành đơn từ 300K', icon: 'Truck' },
+    { id: 'returns', title: 'Đổi Trả 7 Ngày', description: 'Cam kết hoàn tiền nếu sản phẩm lỗi nhà sản xuất', icon: 'CheckCircle' },
+    { id: 'discount', title: 'Chiết Khấu Cao', description: 'Ưu đãi đến 20% cho đơn doanh nghiệp & trường học', icon: 'ShieldCheck' },
+  ];
+  const perkIconMap: Record<string, any> = { Award, Truck, CheckCircle, ShieldCheck };
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % bannerSlides.length);
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
     }, 5500);
     return () => clearInterval(timer);
+  }, [slides.length]);
+
+  useEffect(() => {
+    siteContentAPI.get()
+      .then((res) => {
+        if (res.success && res.data) setSiteContent(res.data);
+      })
+      .catch((err) => console.error('Không tải được nội dung website từ database:', err));
   }, []);
 
   useEffect(() => {
@@ -87,7 +104,7 @@ export const HomePage: React.FC = () => {
     loadData();
   }, []);
 
-  const slide = bannerSlides[currentSlide];
+  const slide = slides[currentSlide % slides.length];
 
   return (
     <div>
@@ -123,7 +140,7 @@ export const HomePage: React.FC = () => {
 
             {/* Slide Navigation Arrows */}
             <button
-              onClick={() => setCurrentSlide((prev) => (prev - 1 + bannerSlides.length) % bannerSlides.length)}
+              onClick={() => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length)}
               style={{
                 position: 'absolute',
                 left: 16,
@@ -146,7 +163,7 @@ export const HomePage: React.FC = () => {
             </button>
 
             <button
-              onClick={() => setCurrentSlide((prev) => (prev + 1) % bannerSlides.length)}
+              onClick={() => setCurrentSlide((prev) => (prev + 1) % slides.length)}
               style={{
                 position: 'absolute',
                 right: 16,
@@ -171,37 +188,21 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* 4 Core Perks */}
+      {/* Core perks loaded from MongoDB site content */}
       <section className="container">
         <div className="perks-grid">
-          <div className="perk-card">
-            <div className="perk-icon"><Award size={24} /></div>
-            <div>
-              <div className="perk-title">Chính Hãng 100%</div>
-              <div className="perk-desc">Phân phối trực tiếp từ Thiên Long, Deli, Pentel</div>
-            </div>
-          </div>
-          <div className="perk-card">
-            <div className="perk-icon"><Truck size={24} /></div>
-            <div>
-              <div className="perk-title">Giao Hỏa Tốc 2H</div>
-              <div className="perk-desc">Miễn phí giao hàng nội thành đơn từ 300K</div>
-            </div>
-          </div>
-          <div className="perk-card">
-            <div className="perk-icon"><CheckCircle size={24} /></div>
-            <div>
-              <div className="perk-title">Đổi Trả 7 Ngày</div>
-              <div className="perk-desc">Cam kết hoàn tiền nếu sản phẩm lỗi nhà sản xuất</div>
-            </div>
-          </div>
-          <div className="perk-card">
-            <div className="perk-icon"><ShieldCheck size={24} /></div>
-            <div>
-              <div className="perk-title">Chiết Khấu Cao</div>
-              <div className="perk-desc">Ưu đãi đến 20% cho đơn doanh nghiệp & trường học</div>
-            </div>
-          </div>
+          {perks.map((perk: any) => {
+            const PerkIcon = perkIconMap[perk.icon] || Award;
+            return (
+              <div className="perk-card" key={perk.id || perk.title}>
+                <div className="perk-icon"><PerkIcon size={24} /></div>
+                <div>
+                  <div className="perk-title">{perk.title}</div>
+                  <div className="perk-desc">{perk.description}</div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </section>
 
