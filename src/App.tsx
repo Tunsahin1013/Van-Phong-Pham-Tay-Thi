@@ -32,7 +32,7 @@ const ProtectedRoute: React.FC<{
 
   if (isLoading) {
     return (
-      <div style={{ padding: 80, textAlign: 'center', color: '#64748b' }}>
+      <div style={{ padding: 80, textAlign: 'center', color: '#5f5e5e' }}>
         Đang kiểm tra quyền truy cập...
       </div>
     );
@@ -45,10 +45,10 @@ const ProtectedRoute: React.FC<{
   if (!allowedRoles.includes(currentUser.role)) {
     return (
       <div className="container" style={{ padding: '80px 20px', textAlign: 'center' }}>
-        <h2 style={{ fontSize: 24, fontWeight: 700, color: '#dc2626', marginBottom: 12 }}>
+        <h2 style={{ fontSize: 24, fontWeight: 700, color: '#D90D24', marginBottom: 12 }}>
           Quyền truy cập bị từ chối (403 Forbidden)
         </h2>
-        <p style={{ color: '#64748b', marginBottom: 24 }}>
+        <p style={{ color: '#5f5e5e', marginBottom: 24 }}>
           Tài khoản của bạn ({currentUser.role}) không có quyền truy cập vào phân hệ này. Vui lòng chuyển sang tài khoản có quyền tương ứng trên thanh Demo Bar.
         </p>
         <Navigate to="/" replace />

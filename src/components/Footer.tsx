@@ -9,31 +9,31 @@ export const Footer: React.FC = () => {
         {/* Top 4 Core Commitments */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 24, paddingBottom: 40, marginBottom: 40, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <Award size={36} color="#38bdf8" />
+            <Award size={36} color="#F21D2F" />
             <div>
               <div style={{ color: '#ffffff', fontWeight: 700, fontSize: 15 }}>100% Chính Hãng</div>
-              <div style={{ fontSize: 13, color: '#94a3b8' }}>Cam kết nguồn gốc xuất xứ</div>
+              <div style={{ fontSize: 13, color: '#777B80' }}>Cam kết nguồn gốc xuất xứ</div>
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <Truck size={36} color="#38bdf8" />
+            <Truck size={36} color="#F21D2F" />
             <div>
               <div style={{ color: '#ffffff', fontWeight: 700, fontSize: 15 }}>Giao Hỏa Tốc 2H</div>
-              <div style={{ fontSize: 13, color: '#94a3b8' }}>Miễn phí từ đơn 300K</div>
+              <div style={{ fontSize: 13, color: '#777B80' }}>Miễn phí từ đơn 300K</div>
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <RefreshCw size={36} color="#38bdf8" />
+            <RefreshCw size={36} color="#F21D2F" />
             <div>
               <div style={{ color: '#ffffff', fontWeight: 700, fontSize: 15 }}>Đổi Trả 7 Ngày</div>
-              <div style={{ fontSize: 13, color: '#94a3b8' }}>Thủ tục nhanh chóng tiện lợi</div>
+              <div style={{ fontSize: 13, color: '#777B80' }}>Thủ tục nhanh chóng tiện lợi</div>
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <ShieldCheck size={36} color="#38bdf8" />
+            <ShieldCheck size={36} color="#F21D2F" />
             <div>
               <div style={{ color: '#ffffff', fontWeight: 700, fontSize: 15 }}>Hóa Đơn VAT Đỏ</div>
-              <div style={{ fontSize: 13, color: '#94a3b8' }}>Xuất đầy đủ cho doanh nghiệp</div>
+              <div style={{ fontSize: 13, color: '#777B80' }}>Xuất đầy đủ cho doanh nghiệp</div>
             </div>
           </div>
         </div>
@@ -42,23 +42,23 @@ export const Footer: React.FC = () => {
         <div className="footer-grid">
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-              <div style={{ width: 36, height: 36, borderRadius: 8, background: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff' }}>
+              <div style={{ width: 36, height: 36, borderRadius: 8, background: '#F21D2F', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff' }}>
                 <Layers size={20} />
               </div>
               <span style={{ fontSize: 20, fontWeight: 800, color: '#ffffff' }}>Tây Thi Stationery</span>
             </div>
-            <p style={{ fontSize: 14, lineHeight: 1.6, marginBottom: 20, color: '#94a3b8' }}>
+            <p style={{ fontSize: 14, lineHeight: 1.6, marginBottom: 20, color: '#777B80' }}>
               Hệ thống cung cấp giải pháp văn phòng phẩm trọn gói cho học sinh, sinh viên và doanh nghiệp. Chất lượng đỉnh cao, giá thành cạnh tranh nhất thị trường.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <MapPin size={16} color="#38bdf8" /> 10 Ngõ 226 Cầu Giấy, Nghĩa Đô, Cầu Giấy, Hà Nội
+                <MapPin size={16} color="#F21D2F" /> 10 Ngõ 226 Cầu Giấy, Nghĩa Đô, Cầu Giấy, Hà Nội
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <Phone size={16} color="#38bdf8" /> Hotline: 1900 6868 - (028) 3823 4850
+                <Phone size={16} color="#F21D2F" /> Hotline: 1900 6868 - (028) 3823 4850
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <Mail size={16} color="#38bdf8" /> Email: lienhe@stationery.vn
+                <Mail size={16} color="#F21D2F" /> Email: lienhe@stationery.vn
               </div>
             </div>
           </div>
@@ -107,7 +107,7 @@ export const Footer: React.FC = () => {
               />
               <button className="btn-primary" style={{ padding: '10px 16px', fontSize: 13 }}>Gửi</button>
             </div>
-            <div style={{ marginTop: 20, fontSize: 12, color: '#64748b' }}>
+            <div style={{ marginTop: 20, fontSize: 12, color: '#5f5e5e' }}>
               Phương thức thanh toán hỗ trợ: Tiền mặt COD, Ví Stationery Pay, QR Ngân hàng Napas 247, Momo, VNPAY.
             </div>
           </div>

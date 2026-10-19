@@ -258,12 +258,12 @@ export const AdminDashboard: React.FC = () => {
       {/* Sidebar */}
       <aside className="admin-sidebar">
         <div className="admin-brand">
-          <div style={{ width: 34, height: 34, borderRadius: 8, background: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff' }}>
+          <div style={{ width: 34, height: 34, borderRadius: 8, background: '#F21D2F', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff' }}>
             <Layers size={20} />
           </div>
           <div>
             <div style={{ fontSize: 16, fontWeight: 800, color: '#ffffff' }}>Stationery Shop</div>
-            <div style={{ fontSize: 10, color: '#38bdf8', fontWeight: 600 }}>QUẢN TRỊ VIÊN TOÀN QUYỀN</div>
+            <div style={{ fontSize: 10, color: '#F21D2F', fontWeight: 600 }}>QUẢN TRỊ VIÊN TOÀN QUYỀN</div>
           </div>
         </div>
 
@@ -369,7 +369,7 @@ export const AdminDashboard: React.FC = () => {
             </h2>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ fontSize: 13, color: '#64748b' }}>
+            <span style={{ fontSize: 13, color: '#5f5e5e' }}>
               Admin: <strong>{currentUser?.name}</strong>
             </span>
           </div>
@@ -397,7 +397,7 @@ export const AdminDashboard: React.FC = () => {
                     <div className="stat-val">{summary.totalOrders}</div>
                     <div className="stat-label">Tổng Đơn Hàng Trong Hệ Thống</div>
                   </div>
-                  <div className="stat-icon" style={{ backgroundColor: '#eff6ff', color: '#2563eb' }}>
+                  <div className="stat-icon" style={{ backgroundColor: '#FFE5E8', color: '#F21D2F' }}>
                     <ShoppingBag size={26} />
                   </div>
                 </div>
@@ -426,29 +426,29 @@ export const AdminDashboard: React.FC = () => {
               {/* Recharts Analytics Charts */}
               <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: 24, marginBottom: 28 }}>
                 {/* Revenue Trend Area Chart */}
-                <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #e2e8f0', padding: 24, boxShadow: 'var(--shadow-sm)' }}>
+                <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #E2E3E1', padding: 24, boxShadow: 'var(--shadow-sm)' }}>
                   <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Biểu Đồ Doanh Thu Theo Tháng (VND)</h3>
                   <div style={{ height: 280 }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={monthlyRevData}>
                         <defs>
                           <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#2563eb" stopOpacity={0.8}/>
-                            <stop offset="95%" stopColor="#2563eb" stopOpacity={0}/>
+                            <stop offset="5%" stopColor="#F21D2F" stopOpacity={0.8}/>
+                            <stop offset="95%" stopColor="#F21D2F" stopOpacity={0}/>
                           </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                        <XAxis dataKey="month" stroke="#94a3b8" fontSize={12} />
-                        <YAxis stroke="#94a3b8" fontSize={12} tickFormatter={(v) => `${v / 1000000}M`} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#EEEEEC" />
+                        <XAxis dataKey="month" stroke="#777B80" fontSize={12} />
+                        <YAxis stroke="#777B80" fontSize={12} tickFormatter={(v) => `${v / 1000000}M`} />
                         <Tooltip formatter={(value: any) => [i18n.currency(value), 'Doanh thu']} />
-                        <Area type="monotone" dataKey="revenue" stroke="#2563eb" fillOpacity={1} fill="url(#colorRev)" />
+                        <Area type="monotone" dataKey="revenue" stroke="#F21D2F" fillOpacity={1} fill="url(#colorRev)" />
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
                 </div>
 
                 {/* Orders Status Pie Chart */}
-                <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #e2e8f0', padding: 24, boxShadow: 'var(--shadow-sm)' }}>
+                <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #E2E3E1', padding: 24, boxShadow: 'var(--shadow-sm)' }}>
                   <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Tỷ Lệ Trạng Thái Đơn Hàng</h3>
                   <div style={{ height: 280 }}>
                     <ResponsiveContainer width="100%" height="100%">
@@ -463,7 +463,7 @@ export const AdminDashboard: React.FC = () => {
                           dataKey="count"
                         >
                           {statusPieData.map((entry: any, index: number) => (
-                            <Cell key={`cell-${index}`} fill={entry.color || '#3b82f6'} />
+                            <Cell key={`cell-${index}`} fill={entry.color || '#D90D24'} />
                           ))}
                         </Pie>
                         <Tooltip />
@@ -477,14 +477,14 @@ export const AdminDashboard: React.FC = () => {
               {/* Best Selling Categories & Top Selling Products */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
                 {/* Category Sales Bar Chart */}
-                <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #e2e8f0', padding: 24, boxShadow: 'var(--shadow-sm)' }}>
+                <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #E2E3E1', padding: 24, boxShadow: 'var(--shadow-sm)' }}>
                   <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Sản Lượng Bán Theo Danh Mục (Món)</h3>
                   <div style={{ height: 260 }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={categoryStats.slice(0, 5)}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                        <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} />
-                        <YAxis stroke="#94a3b8" fontSize={12} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#EEEEEC" />
+                        <XAxis dataKey="name" stroke="#777B80" fontSize={11} />
+                        <YAxis stroke="#777B80" fontSize={12} />
                         <Tooltip />
                         <Bar dataKey="sold" fill="#059669" radius={[4, 4, 0, 0]} />
                       </BarChart>
@@ -493,16 +493,16 @@ export const AdminDashboard: React.FC = () => {
                 </div>
 
                 {/* Best Selling Products list */}
-                <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #e2e8f0', padding: 24, boxShadow: 'var(--shadow-sm)' }}>
+                <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #E2E3E1', padding: 24, boxShadow: 'var(--shadow-sm)' }}>
                   <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Top Sản Phẩm Bán Chạy Nhất</h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                     {dashboardData?.bestSellingProducts?.slice(0, 5).map((p: any) => (
-                      <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13, borderBottom: '1px solid #f8fafc', paddingBottom: 8 }}>
+                      <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13, borderBottom: '1px solid #F5F5F3', paddingBottom: 8 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                           <img src={p.image} alt={p.name} style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover' }} />
                           <div>
-                            <div style={{ fontWeight: 600, color: '#1e293b' }}>{p.name}</div>
-                            <div style={{ fontSize: 11, color: '#64748b' }}>Kho: {p.stock} {p.unit}</div>
+                            <div style={{ fontWeight: 600, color: '#101010' }}>{p.name}</div>
+                            <div style={{ fontSize: 11, color: '#5f5e5e' }}>Kho: {p.stock} {p.unit}</div>
                           </div>
                         </div>
                         <span style={{ fontWeight: 800, color: '#059669' }}>Đã bán: {p.sold}</span>
@@ -516,7 +516,7 @@ export const AdminDashboard: React.FC = () => {
 
           {/* TAB 2: PRODUCTS MANAGEMENT */}
           {activeTab === 'products' && (
-            <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #e2e8f0', padding: 24 }}>
+            <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #E2E3E1', padding: 24 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                 <div style={{ display: 'flex', gap: 10 }}>
                   <input
@@ -524,7 +524,7 @@ export const AdminDashboard: React.FC = () => {
                     placeholder="Tìm tên hoặc mã sản phẩm..."
                     value={filterSearch}
                     onChange={(e) => setFilterSearch(e.target.value)}
-                    style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13, width: 260 }}
+                    style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid #E7E8EA', fontSize: 13, width: 260 }}
                   />
                 </div>
                 <button
@@ -575,16 +575,16 @@ export const AdminDashboard: React.FC = () => {
                               <img src={p.image} alt={p.name} style={{ width: 40, height: 40, borderRadius: 6, objectFit: 'cover' }} />
                               <div>
                                 <div style={{ fontWeight: 600 }}>{p.name}</div>
-                                <div style={{ fontSize: 11, color: '#64748b' }}>Hãng: {p.brand}</div>
+                                <div style={{ fontSize: 11, color: '#5f5e5e' }}>Hãng: {p.brand}</div>
                               </div>
                             </div>
                           </td>
                           <td><strong>{p.code}</strong></td>
                           <td>{p.categoryName}</td>
-                          <td style={{ color: '#64748b' }}>{i18n.currency(p.price)}</td>
-                          <td><strong style={{ color: '#dc2626' }}>{i18n.currency(p.salePrice || p.price)}</strong></td>
+                          <td style={{ color: '#5f5e5e' }}>{i18n.currency(p.price)}</td>
+                          <td><strong style={{ color: '#D90D24' }}>{i18n.currency(p.salePrice || p.price)}</strong></td>
                           <td>
-                            <span style={{ fontWeight: 700, color: p.stock < 50 ? '#dc2626' : '#059669' }}>
+                            <span style={{ fontWeight: 700, color: p.stock < 50 ? '#D90D24' : '#059669' }}>
                               {p.stock} {p.unit}
                             </span>
                           </td>
@@ -596,17 +596,17 @@ export const AdminDashboard: React.FC = () => {
                                   setProdForm({ ...p });
                                   setShowProductModal(p);
                                 }}
-                                style={{ padding: 6, borderRadius: 6, border: '1px solid #cbd5e1', background: '#f8fafc', cursor: 'pointer' }}
+                                style={{ padding: 6, borderRadius: 6, border: '1px solid #E7E8EA', background: '#F5F5F3', cursor: 'pointer' }}
                                 title="Chỉnh sửa"
                               >
-                                <Edit size={14} color="#2563eb" />
+                                <Edit size={14} color="#F21D2F" />
                               </button>
                               <button
                                 onClick={() => handleDeleteProduct(p.id)}
-                                style={{ padding: 6, borderRadius: 6, border: '1px solid #fca5a5', background: '#fef2f2', cursor: 'pointer' }}
+                                style={{ padding: 6, borderRadius: 6, border: '1px solid #fca5a5', background: '#FFE5E8', cursor: 'pointer' }}
                                 title="Xóa"
                               >
-                                <Trash2 size={14} color="#ef4444" />
+                                <Trash2 size={14} color="#F21D2F" />
                               </button>
                             </div>
                           </td>
@@ -620,7 +620,7 @@ export const AdminDashboard: React.FC = () => {
 
           {/* TAB 3: CATEGORIES MANAGEMENT */}
           {activeTab === 'categories' && (
-            <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #e2e8f0', padding: 24 }}>
+            <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #E2E3E1', padding: 24 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700 }}>Danh Mục Văn Phòng Phẩm ({categories.length})</h3>
                 <button
@@ -651,8 +651,8 @@ export const AdminDashboard: React.FC = () => {
                         <tr key={c.id}>
                           <td><strong>{c.name}</strong></td>
                           <td><code>{c.code}</code></td>
-                          <td style={{ color: '#64748b' }}>/{c.slug}</td>
-                          <td style={{ color: '#475569', fontSize: 13 }}>{c.description}</td>
+                          <td style={{ color: '#5f5e5e' }}>/{c.slug}</td>
+                          <td style={{ color: '#5f5e5e', fontSize: 13 }}>{c.description}</td>
                           <td><span style={{ fontWeight: 700, color: 'var(--primary)' }}>{count} sản phẩm</span></td>
                           <td>
                             <span style={{ color: '#059669', fontWeight: 600, fontSize: 12 }}>✓ Hoạt động</span>
@@ -668,7 +668,7 @@ export const AdminDashboard: React.FC = () => {
 
           {/* TAB 4: ORDERS MANAGEMENT */}
           {activeTab === 'orders' && (
-            <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #e2e8f0', padding: 24 }}>
+            <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #E2E3E1', padding: 24 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700 }}>Tất Cả Đơn Hàng ({orders.length})</h3>
               </div>
@@ -690,18 +690,18 @@ export const AdminDashboard: React.FC = () => {
                     {orders.map((ord) => {
                       const statusConf = i18n.orderStatus[ord.orderStatus as keyof typeof i18n.orderStatus] || {
                         label: ord.orderStatus,
-                        color: '#64748b',
-                        bg: '#f1f5f9',
+                        color: '#5f5e5e',
+                        bg: '#EEEEEC',
                       };
                       return (
                         <tr key={ord.id}>
                           <td><strong>{ord.orderCode}</strong></td>
                           <td>
                             <div>{ord.customerName}</div>
-                            <div style={{ fontSize: 11, color: '#64748b' }}>{ord.customerPhone}</div>
+                            <div style={{ fontSize: 11, color: '#5f5e5e' }}>{ord.customerPhone}</div>
                           </td>
-                          <td style={{ color: '#64748b', fontSize: 12 }}>{i18n.formatDate(ord.createdAt)}</td>
-                          <td><strong style={{ color: '#dc2626' }}>{i18n.currency(ord.total)}</strong></td>
+                          <td style={{ color: '#5f5e5e', fontSize: 12 }}>{i18n.formatDate(ord.createdAt)}</td>
+                          <td><strong style={{ color: '#D90D24' }}>{i18n.currency(ord.total)}</strong></td>
                           <td>
                             <span
                               style={{
@@ -733,7 +733,7 @@ export const AdminDashboard: React.FC = () => {
                           <td>
                             <button
                               onClick={() => setSelectedOrder(ord)}
-                              style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #cbd5e1', background: '#f8fafc', cursor: 'pointer', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}
+                              style={{ padding: '6px 10px', borderRadius: 6, border: '1px solid #E7E8EA', background: '#F5F5F3', cursor: 'pointer', fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}
                             >
                               <Eye size={14} /> Xem / Cập nhật
                             </button>
@@ -749,11 +749,11 @@ export const AdminDashboard: React.FC = () => {
 
           {/* TAB 5: INVENTORY LOGS */}
           {activeTab === 'inventory' && (
-            <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #e2e8f0', padding: 24 }}>
+            <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #E2E3E1', padding: 24 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                 <div>
                   <h3 style={{ fontSize: 18, fontWeight: 700 }}>Lịch Sử Nhập - Xuất - Điều Chỉnh Kho</h3>
-                  <p style={{ fontSize: 13, color: '#64748b' }}>Ghi nhận nhật ký biến động kho chính xác phục vụ kiểm kê</p>
+                  <p style={{ fontSize: 13, color: '#5f5e5e' }}>Ghi nhận nhật ký biến động kho chính xác phục vụ kiểm kê</p>
                 </div>
               </div>
 
@@ -776,10 +776,10 @@ export const AdminDashboard: React.FC = () => {
                       const isStockIn = log.type === 'IN';
                       return (
                         <tr key={log.id}>
-                          <td style={{ fontSize: 12, color: '#64748b' }}>{i18n.formatDate(log.createdAt)}</td>
+                          <td style={{ fontSize: 12, color: '#5f5e5e' }}>{i18n.formatDate(log.createdAt)}</td>
                           <td>
                             <div style={{ fontWeight: 600 }}>{log.productName}</div>
-                            <div style={{ fontSize: 11, color: '#64748b' }}>SKU: {log.productCode}</div>
+                            <div style={{ fontSize: 11, color: '#5f5e5e' }}>SKU: {log.productCode}</div>
                           </td>
                           <td>
                             <span
@@ -788,22 +788,22 @@ export const AdminDashboard: React.FC = () => {
                                 borderRadius: 4,
                                 fontSize: 11,
                                 fontWeight: 700,
-                                backgroundColor: isStockIn ? '#dbeafe' : '#fef2f2',
-                                color: isStockIn ? '#1d4ed8' : '#dc2626',
+                                backgroundColor: isStockIn ? '#FFE5E8' : '#FFE5E8',
+                                color: isStockIn ? '#D90D24' : '#D90D24',
                               }}
                             >
                               {log.type === 'IN' ? 'Nhập kho' : log.type === 'OUT' ? 'Xuất đơn hàng' : 'Điều chỉnh'}
                             </span>
                           </td>
                           <td>
-                            <strong style={{ color: isStockIn ? '#059669' : '#dc2626' }}>
+                            <strong style={{ color: isStockIn ? '#059669' : '#D90D24' }}>
                               {isStockIn ? '+' : ''}{log.quantity}
                             </strong>
                           </td>
-                          <td style={{ color: '#64748b' }}>{log.previousStock}</td>
-                          <td><strong style={{ color: '#0f172a' }}>{log.newStock}</strong></td>
-                          <td style={{ fontSize: 13, color: '#475569' }}>{log.note}</td>
-                          <td style={{ fontSize: 12, color: '#64748b' }}>{log.createdBy}</td>
+                          <td style={{ color: '#5f5e5e' }}>{log.previousStock}</td>
+                          <td><strong style={{ color: '#101010' }}>{log.newStock}</strong></td>
+                          <td style={{ fontSize: 13, color: '#5f5e5e' }}>{log.note}</td>
+                          <td style={{ fontSize: 12, color: '#5f5e5e' }}>{log.createdBy}</td>
                         </tr>
                       );
                     })}
@@ -815,7 +815,7 @@ export const AdminDashboard: React.FC = () => {
 
           {/* TAB 6: SUPPLIERS */}
           {activeTab === 'suppliers' && (
-            <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #e2e8f0', padding: 24 }}>
+            <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #E2E3E1', padding: 24 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700 }}>Danh Sách Nhà Cung Cấp VPP ({suppliers.length})</h3>
               </div>
@@ -839,8 +839,8 @@ export const AdminDashboard: React.FC = () => {
                         <td><code>{sup.code}</code></td>
                         <td>{sup.contactPerson}</td>
                         <td>{sup.phone}</td>
-                        <td style={{ color: '#2563eb' }}>{sup.email}</td>
-                        <td style={{ fontSize: 12, color: '#64748b' }}>{sup.address}</td>
+                        <td style={{ color: '#F21D2F' }}>{sup.email}</td>
+                        <td style={{ fontSize: 12, color: '#5f5e5e' }}>{sup.address}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -851,7 +851,7 @@ export const AdminDashboard: React.FC = () => {
 
           {/* TAB 7: VOUCHERS */}
           {activeTab === 'vouchers' && (
-            <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #e2e8f0', padding: 24 }}>
+            <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #E2E3E1', padding: 24 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700 }}>Danh Sách Mã Khuyến Mãi & Giảm Giá ({vouchers.length})</h3>
               </div>
@@ -880,7 +880,7 @@ export const AdminDashboard: React.FC = () => {
                         </td>
                         <td>{i18n.currency(v.minimumOrder)}</td>
                         <td>{v.usedCount} / {v.usageLimit}</td>
-                        <td style={{ fontSize: 12, color: '#64748b' }}>{i18n.formatDate(v.endDate)}</td>
+                        <td style={{ fontSize: 12, color: '#5f5e5e' }}>{i18n.formatDate(v.endDate)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -891,7 +891,7 @@ export const AdminDashboard: React.FC = () => {
 
           {/* TAB 8: USERS */}
           {activeTab === 'users' && (
-            <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #e2e8f0', padding: 24 }}>
+            <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #E2E3E1', padding: 24 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700 }}>Danh Sách Người Dùng & Nhân Viên ({users.length})</h3>
               </div>
@@ -916,7 +916,7 @@ export const AdminDashboard: React.FC = () => {
                       return (
                         <tr key={u.id}>
                           <td><strong>{u.name}</strong></td>
-                          <td style={{ color: '#2563eb' }}>{u.email}</td>
+                          <td style={{ color: '#F21D2F' }}>{u.email}</td>
                           <td>
                             <span
                               style={{
@@ -924,8 +924,8 @@ export const AdminDashboard: React.FC = () => {
                                 borderRadius: 4,
                                 fontSize: 11,
                                 fontWeight: 700,
-                                backgroundColor: isAdm ? '#fee2e2' : isEmp ? '#ecfdf5' : '#eff6ff',
-                                color: isAdm ? '#dc2626' : isEmp ? '#059669' : '#2563eb',
+                                backgroundColor: isAdm ? '#FFE5E8' : isEmp ? '#ecfdf5' : '#FFE5E8',
+                                color: isAdm ? '#D90D24' : isEmp ? '#059669' : '#F21D2F',
                               }}
                             >
                               {u.role}
@@ -948,7 +948,7 @@ export const AdminDashboard: React.FC = () => {
 
           {/* TAB 9: REVIEWS MODERATION */}
           {activeTab === 'reviews' && (
-            <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #e2e8f0', padding: 24 }}>
+            <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #E2E3E1', padding: 24 }}>
               <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20 }}>Kiểm Duyệt Nhận Xét Của Khách Hàng ({reviews.length})</h3>
 
               <div className="table-container">
@@ -971,7 +971,7 @@ export const AdminDashboard: React.FC = () => {
                         <td>{r.customerName}</td>
                         <td><strong style={{ color: '#f59e0b' }}>{r.rating} ★</strong></td>
                         <td style={{ maxWidth: 300, fontSize: 13, lineHeight: 1.4 }}>{r.comment}</td>
-                        <td style={{ fontSize: 12, color: '#64748b' }}>{i18n.formatDate(r.createdAt)}</td>
+                        <td style={{ fontSize: 12, color: '#5f5e5e' }}>{i18n.formatDate(r.createdAt)}</td>
                         <td>
                           <span
                             style={{
@@ -979,8 +979,8 @@ export const AdminDashboard: React.FC = () => {
                               borderRadius: 4,
                               fontSize: 11,
                               fontWeight: 700,
-                              backgroundColor: r.status === 'APPROVED' ? '#d1fae5' : '#fee2e2',
-                              color: r.status === 'APPROVED' ? '#065f46' : '#dc2626',
+                              backgroundColor: r.status === 'APPROVED' ? '#d1fae5' : '#FFE5E8',
+                              color: r.status === 'APPROVED' ? '#065f46' : '#D90D24',
                             }}
                           >
                             {r.status === 'APPROVED' ? 'Hiển thị' : 'Đã ẩn'}
@@ -992,7 +992,7 @@ export const AdminDashboard: React.FC = () => {
                             style={{
                               padding: '4px 10px',
                               borderRadius: 6,
-                              border: '1px solid #cbd5e1',
+                              border: '1px solid #E7E8EA',
                               backgroundColor: '#ffffff',
                               fontSize: 12,
                               fontWeight: 600,
@@ -1012,24 +1012,24 @@ export const AdminDashboard: React.FC = () => {
 
           {/* TAB 10: REPORTS */}
           {activeTab === 'reports' && (
-            <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #e2e8f0', padding: 24 }}>
+            <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #E2E3E1', padding: 24 }}>
               <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20 }}>Báo Cáo Chi Tiết Doanh Thu & Khách Hàng</h3>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20, marginBottom: 32 }}>
-                <div style={{ padding: 20, borderRadius: 12, backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
-                  <div style={{ fontSize: 13, color: '#64748b' }}>Doanh thu tích lũy hoàn tất</div>
+                <div style={{ padding: 20, borderRadius: 12, backgroundColor: '#F5F5F3', border: '1px solid #E2E3E1' }}>
+                  <div style={{ fontSize: 13, color: '#5f5e5e' }}>Doanh thu tích lũy hoàn tất</div>
                   <div style={{ fontSize: 24, fontWeight: 900, color: '#059669', marginTop: 4 }}>
                     {i18n.currency(summary.totalRevenue)}
                   </div>
                 </div>
-                <div style={{ padding: 20, borderRadius: 12, backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
-                  <div style={{ fontSize: 13, color: '#64748b' }}>Tỷ lệ đơn hàng thành công</div>
-                  <div style={{ fontSize: 24, fontWeight: 900, color: '#2563eb', marginTop: 4 }}>
+                <div style={{ padding: 20, borderRadius: 12, backgroundColor: '#F5F5F3', border: '1px solid #E2E3E1' }}>
+                  <div style={{ fontSize: 13, color: '#5f5e5e' }}>Tỷ lệ đơn hàng thành công</div>
+                  <div style={{ fontSize: 24, fontWeight: 900, color: '#F21D2F', marginTop: 4 }}>
                     {summary.totalOrders > 0 ? Math.round((summary.completedOrdersCount / summary.totalOrders) * 100) : 100}%
                   </div>
                 </div>
-                <div style={{ padding: 20, borderRadius: 12, backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
-                  <div style={{ fontSize: 13, color: '#64748b' }}>Khách hàng đã chi tiêu</div>
+                <div style={{ padding: 20, borderRadius: 12, backgroundColor: '#F5F5F3', border: '1px solid #E2E3E1' }}>
+                  <div style={{ fontSize: 13, color: '#5f5e5e' }}>Khách hàng đã chi tiêu</div>
                   <div style={{ fontSize: 24, fontWeight: 900, color: '#7c3aed', marginTop: 4 }}>
                     {summary.totalCustomers} tài khoản
                   </div>
@@ -1053,10 +1053,10 @@ export const AdminDashboard: React.FC = () => {
                     {dashboardData?.customerSpending?.map((c: any) => (
                       <tr key={c.id}>
                         <td><strong>{c.name}</strong></td>
-                        <td style={{ color: '#2563eb' }}>{c.email}</td>
+                        <td style={{ color: '#F21D2F' }}>{c.email}</td>
                         <td>{c.phone}</td>
                         <td>{c.orderCount} đơn hàng</td>
-                        <td><strong style={{ color: '#dc2626' }}>{i18n.currency(c.totalSpent)}</strong></td>
+                        <td><strong style={{ color: '#D90D24' }}>{i18n.currency(c.totalSpent)}</strong></td>
                         <td style={{ color: '#d97706', fontWeight: 700 }}>{c.points} điểm</td>
                       </tr>
                     ))}
@@ -1068,9 +1068,9 @@ export const AdminDashboard: React.FC = () => {
 
           {/* TAB 11: BROADCAST NOTIFICATIONS */}
           {activeTab === 'notifications' && (
-            <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #e2e8f0', padding: 24, maxWidth: 600 }}>
+            <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #E2E3E1', padding: 24, maxWidth: 600 }}>
               <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>Phát Thông Báo Toàn Hệ Thống</h3>
-              <p style={{ fontSize: 13, color: '#64748b', marginBottom: 20 }}>
+              <p style={{ fontSize: 13, color: '#5f5e5e', marginBottom: 20 }}>
                 Thông báo sẽ xuất hiện trên quả chuông của tất cả các tài khoản khách hàng và nhân viên ngay lập tức.
               </p>
 
@@ -1249,17 +1249,17 @@ export const AdminDashboard: React.FC = () => {
               <button className="modal-close-btn" onClick={() => setSelectedOrder(null)}>✕</button>
             </div>
             <div className="modal-body">
-              <div style={{ backgroundColor: '#f8fafc', padding: 16, borderRadius: 10, marginBottom: 16, fontSize: 13, lineHeight: 1.6 }}>
+              <div style={{ backgroundColor: '#F5F5F3', padding: 16, borderRadius: 10, marginBottom: 16, fontSize: 13, lineHeight: 1.6 }}>
                 <div>Khách hàng: <strong>{selectedOrder.customerName}</strong> ({selectedOrder.customerPhone})</div>
                 <div>Địa chỉ: <strong>{selectedOrder.shippingAddress}</strong></div>
                 <div>Thanh toán: <strong>{selectedOrder.paymentStatus} ({selectedOrder.paymentMethod})</strong></div>
-                <div>Tổng thanh toán: <strong style={{ color: '#dc2626' }}>{i18n.currency(selectedOrder.total)}</strong></div>
+                <div>Tổng thanh toán: <strong style={{ color: '#D90D24' }}>{i18n.currency(selectedOrder.total)}</strong></div>
               </div>
 
               <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 8 }}>Sản phẩm trong đơn:</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
                 {selectedOrder.items.map((i: any, idx: number) => (
-                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, borderBottom: '1px solid #f1f5f9', paddingBottom: 6 }}>
+                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, borderBottom: '1px solid #EEEEEC', paddingBottom: 6 }}>
                     <span>{i.name} (x{i.quantity} {i.unit})</span>
                     <strong>{i18n.currency(i.price * i.quantity)}</strong>
                   </div>
@@ -1276,9 +1276,9 @@ export const AdminDashboard: React.FC = () => {
                       padding: '8px 12px',
                       borderRadius: 6,
                       border: '1px solid',
-                      borderColor: selectedOrder.orderStatus === st ? '#2563eb' : '#cbd5e1',
-                      backgroundColor: selectedOrder.orderStatus === st ? '#eff6ff' : '#ffffff',
-                      color: selectedOrder.orderStatus === st ? '#2563eb' : '#1e293b',
+                      borderColor: selectedOrder.orderStatus === st ? '#F21D2F' : '#E7E8EA',
+                      backgroundColor: selectedOrder.orderStatus === st ? '#FFE5E8' : '#ffffff',
+                      color: selectedOrder.orderStatus === st ? '#F21D2F' : '#101010',
                       fontWeight: 700,
                       fontSize: 12,
                       cursor: 'pointer',

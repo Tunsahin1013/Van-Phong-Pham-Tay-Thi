@@ -108,7 +108,7 @@ export const ProductDetailPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="container" style={{ padding: '80px 20px', textAlign: 'center', color: '#64748b' }}>
+      <div className="container" style={{ padding: '80px 20px', textAlign: 'center', color: '#5f5e5e' }}>
         Đang tải thông tin sản phẩm...
       </div>
     );
@@ -118,7 +118,7 @@ export const ProductDetailPage: React.FC = () => {
     return (
       <div className="container" style={{ padding: '80px 20px', textAlign: 'center' }}>
         <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 12 }}>Không tìm thấy sản phẩm</h2>
-        <p style={{ color: '#64748b', marginBottom: 20 }}>Sản phẩm có thể đã ngừng kinh doanh hoặc đường dẫn không đúng.</p>
+        <p style={{ color: '#5f5e5e', marginBottom: 20 }}>Sản phẩm có thể đã ngừng kinh doanh hoặc đường dẫn không đúng.</p>
         <Link to="/products" className="btn-primary">Quay Lại Cửa Hàng</Link>
       </div>
     );
@@ -134,14 +134,14 @@ export const ProductDetailPage: React.FC = () => {
   return (
     <div className="container" style={{ padding: '24px 20px 60px' }}>
       {/* Breadcrumb */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#64748b', marginBottom: 20 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#5f5e5e', marginBottom: 20 }}>
         <Link to="/">Trang chủ</Link>
         <ChevronRight size={14} />
         <Link to="/products">Văn phòng phẩm</Link>
         <ChevronRight size={14} />
         <Link to={`/products?categoryId=${product.categoryId}`}>{product.categoryName}</Link>
         <ChevronRight size={14} />
-        <span style={{ color: '#0f172a', fontWeight: 600, maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <span style={{ color: '#101010', fontWeight: 600, maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {product.name}
         </span>
       </div>
@@ -154,7 +154,7 @@ export const ProductDetailPage: React.FC = () => {
           gap: 40,
           backgroundColor: '#ffffff',
           borderRadius: 16,
-          border: '1px solid #e2e8f0',
+          border: '1px solid #E2E3E1',
           padding: 32,
           marginBottom: 40,
           boxShadow: 'var(--shadow-sm)',
@@ -167,8 +167,8 @@ export const ProductDetailPage: React.FC = () => {
               position: 'relative',
               borderRadius: 12,
               overflow: 'hidden',
-              backgroundColor: '#f8fafc',
-              border: '1px solid #e2e8f0',
+              backgroundColor: '#F5F5F3',
+              border: '1px solid #E2E3E1',
               aspectRatio: '1 / 1',
             }}
           >
@@ -185,7 +185,7 @@ export const ProductDetailPage: React.FC = () => {
                   left: 16,
                   padding: '6px 12px',
                   borderRadius: 6,
-                  backgroundColor: '#dc2626',
+                  backgroundColor: '#D90D24',
                   color: '#ffffff',
                   fontWeight: 800,
                   fontSize: 13,
@@ -203,13 +203,13 @@ export const ProductDetailPage: React.FC = () => {
             <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--primary)', textTransform: 'uppercase' }}>
               {product.brand}
             </span>
-            <span style={{ color: '#cbd5e1' }}>•</span>
-            <span style={{ fontSize: 13, color: '#64748b' }}>Mã SP: {product.code}</span>
-            <span style={{ color: '#cbd5e1' }}>•</span>
-            <span style={{ fontSize: 13, color: '#64748b' }}>Đã bán: {product.sold || 0}</span>
+            <span style={{ color: '#E7E8EA' }}>•</span>
+            <span style={{ fontSize: 13, color: '#5f5e5e' }}>Mã SP: {product.code}</span>
+            <span style={{ color: '#E7E8EA' }}>•</span>
+            <span style={{ fontSize: 13, color: '#5f5e5e' }}>Đã bán: {product.sold || 0}</span>
           </div>
 
-          <h1 style={{ fontSize: 24, fontWeight: 800, color: '#0f172a', lineHeight: 1.3, marginBottom: 12 }}>
+          <h1 style={{ fontSize: 24, fontWeight: 800, color: '#101010', lineHeight: 1.3, marginBottom: 12 }}>
             {product.name}
           </h1>
 
@@ -226,27 +226,27 @@ export const ProductDetailPage: React.FC = () => {
               ))}
             </div>
             <span style={{ fontWeight: 700, fontSize: 14 }}>{product.rating || 5.0}</span>
-            <span style={{ color: '#64748b', fontSize: 13 }}>({product.reviewCount || 0} đánh giá thực tế)</span>
+            <span style={{ color: '#5f5e5e', fontSize: 13 }}>({product.reviewCount || 0} đánh giá thực tế)</span>
           </div>
 
           {/* Pricing Box */}
           <div
             style={{
               padding: '18px 24px',
-              backgroundColor: '#f8fafc',
+              backgroundColor: '#F5F5F3',
               borderRadius: 12,
-              border: '1px solid #e2e8f0',
+              border: '1px solid #E2E3E1',
               marginBottom: 24,
               display: 'flex',
               alignItems: 'baseline',
               gap: 16,
             }}
           >
-            <span style={{ fontSize: 32, fontWeight: 900, color: '#dc2626' }}>
+            <span style={{ fontSize: 32, fontWeight: 900, color: '#D90D24' }}>
               {i18n.currency(product.salePrice || product.price)}
             </span>
             {product.salePrice < product.price && (
-              <span style={{ fontSize: 18, color: '#94a3b8', textDecoration: 'line-through' }}>
+              <span style={{ fontSize: 18, color: '#777B80', textDecoration: 'line-through' }}>
                 {i18n.currency(product.price)}
               </span>
             )}
@@ -257,9 +257,9 @@ export const ProductDetailPage: React.FC = () => {
 
           {/* Stock status */}
           <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 10, fontSize: 14 }}>
-            <span style={{ fontWeight: 600, color: '#475569' }}>Tình trạng kho:</span>
+            <span style={{ fontWeight: 600, color: '#5f5e5e' }}>Tình trạng kho:</span>
             {isOutOfStock ? (
-              <span style={{ color: '#ef4444', fontWeight: 700 }}>Hết hàng tạm thời</span>
+              <span style={{ color: '#F21D2F', fontWeight: 700 }}>Hết hàng tạm thời</span>
             ) : (
               <span style={{ color: '#059669', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
                 <Check size={16} /> Còn {product.stock} {product.unit} sẵn tại kho
@@ -270,12 +270,12 @@ export const ProductDetailPage: React.FC = () => {
           {/* Quantity selector */}
           {!isOutOfStock && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 28 }}>
-              <span style={{ fontWeight: 600, fontSize: 14, color: '#475569' }}>Số lượng:</span>
-              <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #cbd5e1', borderRadius: 8, overflow: 'hidden' }}>
+              <span style={{ fontWeight: 600, fontSize: 14, color: '#5f5e5e' }}>Số lượng:</span>
+              <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #E7E8EA', borderRadius: 8, overflow: 'hidden' }}>
                 <button
                   type="button"
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  style={{ width: 36, height: 36, background: '#f8fafc', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 16 }}
+                  style={{ width: 36, height: 36, background: '#F5F5F3', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 16 }}
                 >
                   -
                 </button>
@@ -293,7 +293,7 @@ export const ProductDetailPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setQuantity((q) => Math.min(product.stock, q + 1))}
-                  style={{ width: 36, height: 36, background: '#f8fafc', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 16 }}
+                  style={{ width: 36, height: 36, background: '#F5F5F3', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 16 }}
                 >
                   +
                 </button>
@@ -337,20 +337,20 @@ export const ProductDetailPage: React.FC = () => {
           {/* Extra service assurances */}
           <div
             style={{
-              borderTop: '1px solid #e2e8f0',
+              borderTop: '1px solid #E2E3E1',
               paddingTop: 20,
               display: 'grid',
               gridTemplateColumns: 'repeat(3, 1fr)',
               gap: 16,
               fontSize: 12,
-              color: '#64748b',
+              color: '#5f5e5e',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <ShieldCheck size={20} color="#059669" /> Cam kết 100% chính hãng
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Truck size={20} color="#2563eb" /> Giao hàng 2H TP.HCM & HN
+              <Truck size={20} color="#F21D2F" /> Giao hàng 2H TP.HCM & HN
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <RotateCcw size={20} color="#7c3aed" /> Đổi trả trong 7 ngày
@@ -360,9 +360,9 @@ export const ProductDetailPage: React.FC = () => {
       </div>
 
       {/* Product Details & Customer Reviews Tabs */}
-      <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+      <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #E2E3E1', overflow: 'hidden' }}>
         {/* Tab Headers */}
-        <div style={{ display: 'flex', borderBottom: '1px solid #e2e8f0', backgroundColor: '#f8fafc' }}>
+        <div style={{ display: 'flex', borderBottom: '1px solid #E2E3E1', backgroundColor: '#F5F5F3' }}>
           <button
             onClick={() => setActiveTab('desc')}
             style={{
@@ -372,7 +372,7 @@ export const ProductDetailPage: React.FC = () => {
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              color: activeTab === 'desc' ? 'var(--primary)' : '#64748b',
+              color: activeTab === 'desc' ? 'var(--primary)' : '#5f5e5e',
               borderBottom: activeTab === 'desc' ? '3px solid var(--primary)' : '3px solid transparent',
             }}
           >
@@ -387,7 +387,7 @@ export const ProductDetailPage: React.FC = () => {
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              color: activeTab === 'reviews' ? 'var(--primary)' : '#64748b',
+              color: activeTab === 'reviews' ? 'var(--primary)' : '#5f5e5e',
               borderBottom: activeTab === 'reviews' ? '3px solid var(--primary)' : '3px solid transparent',
               display: 'flex',
               alignItems: 'center',
@@ -402,15 +402,15 @@ export const ProductDetailPage: React.FC = () => {
         {activeTab === 'desc' && (
           <div style={{ padding: 32 }}>
             <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>Đặc điểm nổi bật của sản phẩm</h3>
-            <p style={{ fontSize: 15, lineHeight: 1.8, color: '#334155', marginBottom: 24 }}>
+            <p style={{ fontSize: 15, lineHeight: 1.8, color: '#202124', marginBottom: 24 }}>
               {product.description}
             </p>
 
             {product.specification && (
               <>
                 <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>Thông số kỹ thuật</h3>
-                <div style={{ backgroundColor: '#f8fafc', padding: 20, borderRadius: 10, border: '1px solid #e2e8f0', maxWidth: 600 }}>
-                  <p style={{ fontSize: 14, color: '#475569', lineHeight: 1.7 }}>
+                <div style={{ backgroundColor: '#F5F5F3', padding: 20, borderRadius: 10, border: '1px solid #E2E3E1', maxWidth: 600 }}>
+                  <p style={{ fontSize: 14, color: '#5f5e5e', lineHeight: 1.7 }}>
                     {product.specification}
                   </p>
                 </div>
@@ -423,9 +423,9 @@ export const ProductDetailPage: React.FC = () => {
         {activeTab === 'reviews' && (
           <div style={{ padding: 32 }}>
             {/* Reviews Summary */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 32, paddingBottom: 24, borderBottom: '1px solid #e2e8f0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 32, paddingBottom: 24, borderBottom: '1px solid #E2E3E1' }}>
               <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 48, fontWeight: 900, color: '#0f172a', lineHeight: 1 }}>
+                <div style={{ fontSize: 48, fontWeight: 900, color: '#101010', lineHeight: 1 }}>
                   {product.rating || 5.0}
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'center', color: '#f59e0b', margin: '8px 0 4px' }}>
@@ -433,18 +433,18 @@ export const ProductDetailPage: React.FC = () => {
                     <Star key={i} size={18} fill="#f59e0b" color="#f59e0b" />
                   ))}
                 </div>
-                <div style={{ fontSize: 12, color: '#64748b' }}>{reviews.length} đánh giá đã duyệt</div>
+                <div style={{ fontSize: 12, color: '#5f5e5e' }}>{reviews.length} đánh giá đã duyệt</div>
               </div>
             </div>
 
             {/* Write a review form */}
-            <div style={{ backgroundColor: '#f8fafc', padding: 24, borderRadius: 12, border: '1px solid #e2e8f0', marginBottom: 32 }}>
-              <h4 style={{ fontSize: 16, fontWeight: 700, color: '#0f172a', marginBottom: 12 }}>
+            <div style={{ backgroundColor: '#F5F5F3', padding: 24, borderRadius: 12, border: '1px solid #E2E3E1', marginBottom: 32 }}>
+              <h4 style={{ fontSize: 16, fontWeight: 700, color: '#101010', marginBottom: 12 }}>
                 Gửi đánh giá của bạn về sản phẩm này
               </h4>
               <form onSubmit={handleSubmitReview}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: '#475569' }}>Đánh giá của bạn:</span>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: '#5f5e5e' }}>Đánh giá của bạn:</span>
                   <div style={{ display: 'flex', gap: 6 }}>
                     {[1, 2, 3, 4, 5].map((star) => (
                       <button
@@ -456,7 +456,7 @@ export const ProductDetailPage: React.FC = () => {
                         <Star
                           size={24}
                           fill={star <= rating ? '#f59e0b' : 'none'}
-                          color={star <= rating ? '#f59e0b' : '#cbd5e1'}
+                          color={star <= rating ? '#f59e0b' : '#E7E8EA'}
                         />
                       </button>
                     ))}
@@ -488,7 +488,7 @@ export const ProductDetailPage: React.FC = () => {
             {/* List of customer reviews */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {reviews.length === 0 ? (
-                <div style={{ padding: 24, textAlign: 'center', color: '#94a3b8' }}>
+                <div style={{ padding: 24, textAlign: 'center', color: '#777B80' }}>
                   Chưa có nhận xét nào cho sản phẩm này. Hãy là người đầu tiên đánh giá!
                 </div>
               ) : (
@@ -498,7 +498,7 @@ export const ProductDetailPage: React.FC = () => {
                     style={{
                       padding: 16,
                       borderRadius: 10,
-                      border: '1px solid #f1f5f9',
+                      border: '1px solid #EEEEEC',
                       backgroundColor: '#ffffff',
                     }}
                   >
@@ -509,12 +509,12 @@ export const ProductDetailPage: React.FC = () => {
                             width: 32,
                             height: 32,
                             borderRadius: '50%',
-                            backgroundColor: '#e2e8f0',
+                            backgroundColor: '#E2E3E1',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             fontWeight: 700,
-                            color: '#334155',
+                            color: '#202124',
                             fontSize: 12,
                           }}
                         >
@@ -527,7 +527,7 @@ export const ProductDetailPage: React.FC = () => {
                           </div>
                         </div>
                       </div>
-                      <span style={{ fontSize: 11, color: '#94a3b8' }}>{i18n.formatDate(r.createdAt)}</span>
+                      <span style={{ fontSize: 11, color: '#777B80' }}>{i18n.formatDate(r.createdAt)}</span>
                     </div>
 
                     <div style={{ display: 'flex', color: '#f59e0b', marginBottom: 6 }}>
@@ -536,7 +536,7 @@ export const ProductDetailPage: React.FC = () => {
                       ))}
                     </div>
 
-                    <p style={{ fontSize: 14, color: '#334155', lineHeight: 1.5 }}>{r.comment}</p>
+                    <p style={{ fontSize: 14, color: '#202124', lineHeight: 1.5 }}>{r.comment}</p>
                   </div>
                 ))
               )}

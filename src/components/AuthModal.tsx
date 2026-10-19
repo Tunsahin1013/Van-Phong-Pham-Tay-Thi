@@ -81,7 +81,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultTa
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 460 }}>
         {/* Header Tabs */}
-        <div style={{ padding: '20px 24px 0', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ padding: '20px 24px 0', borderBottom: '1px solid #E2E3E1', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', gap: 20 }}>
             <button
               onClick={() => setTab('login')}
@@ -114,7 +114,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultTa
               Đăng Ký
             </button>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', paddingBottom: 14 }}>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#777B80', cursor: 'pointer', paddingBottom: 14 }}>
             <X size={20} />
           </button>
         </div>
@@ -134,7 +134,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultTa
                     onChange={(e) => setEmail(e.target.value)}
                     required
                   />
-                  <Mail size={16} color="#94a3b8" style={{ position: 'absolute', right: 14, top: 13 }} />
+                  <Mail size={16} color="#777B80" style={{ position: 'absolute', right: 14, top: 13 }} />
                 </div>
               </div>
 
@@ -158,7 +158,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultTa
                     onChange={(e) => setPassword(e.target.value)}
                     required
                   />
-                  <Lock size={16} color="#94a3b8" style={{ position: 'absolute', right: 14, top: 13 }} />
+                  <Lock size={16} color="#777B80" style={{ position: 'absolute', right: 14, top: 13 }} />
                 </div>
               </div>
 
@@ -181,7 +181,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultTa
                     onChange={(e) => setName(e.target.value)}
                     required
                   />
-                  <User size={16} color="#94a3b8" style={{ position: 'absolute', right: 14, top: 13 }} />
+                  <User size={16} color="#777B80" style={{ position: 'absolute', right: 14, top: 13 }} />
                 </div>
               </div>
 
@@ -196,7 +196,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultTa
                     onChange={(e) => setEmail(e.target.value)}
                     required
                   />
-                  <Mail size={16} color="#94a3b8" style={{ position: 'absolute', right: 14, top: 13 }} />
+                  <Mail size={16} color="#777B80" style={{ position: 'absolute', right: 14, top: 13 }} />
                 </div>
               </div>
 
@@ -212,7 +212,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultTa
                     required
                     minLength={6}
                   />
-                  <Lock size={16} color="#94a3b8" style={{ position: 'absolute', right: 14, top: 13 }} />
+                  <Lock size={16} color="#777B80" style={{ position: 'absolute', right: 14, top: 13 }} />
                 </div>
               </div>
 
@@ -226,7 +226,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultTa
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                   />
-                  <Phone size={16} color="#94a3b8" style={{ position: 'absolute', right: 14, top: 13 }} />
+                  <Phone size={16} color="#777B80" style={{ position: 'absolute', right: 14, top: 13 }} />
                 </div>
               </div>
 
@@ -240,7 +240,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultTa
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                   />
-                  <MapPin size={16} color="#94a3b8" style={{ position: 'absolute', right: 14, top: 13 }} />
+                  <MapPin size={16} color="#777B80" style={{ position: 'absolute', right: 14, top: 13 }} />
                 </div>
               </div>
 
@@ -254,8 +254,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultTa
             <form onSubmit={handleForgot}>
               <div style={{ textAlign: 'center', marginBottom: 16 }}>
                 <KeyRound size={36} color="var(--primary)" style={{ margin: '0 auto 8px' }} />
-                <h4 style={{ fontSize: 16, fontWeight: 700, color: '#0f172a' }}>Khôi phục mật khẩu</h4>
-                <p style={{ fontSize: 13, color: '#64748b' }}>
+                <h4 style={{ fontSize: 16, fontWeight: 700, color: '#101010' }}>Khôi phục mật khẩu</h4>
+                <p style={{ fontSize: 13, color: '#5f5e5e' }}>
                   Nhập email đăng ký của bạn. Hệ thống sẽ cấp lại mật khẩu mặc định (123456).
                 </p>
               </div>
@@ -279,7 +279,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultTa
               <button
                 type="button"
                 onClick={() => setTab('login')}
-                style={{ width: '100%', marginTop: 10, background: 'none', border: 'none', color: '#64748b', fontSize: 13, cursor: 'pointer' }}
+                style={{ width: '100%', marginTop: 10, background: 'none', border: 'none', color: '#5f5e5e', fontSize: 13, cursor: 'pointer' }}
               >
                 Quay lại đăng nhập
               </button>
@@ -287,8 +287,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultTa
           )}
 
           {/* Quick Demo Login Buttons */}
-          <div style={{ marginTop: 24, paddingTop: 18, borderTop: '1px solid #e2e8f0' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 10 }}>
+          <div style={{ marginTop: 24, paddingTop: 18, borderTop: '1px solid #E2E3E1' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: '#5f5e5e', marginBottom: 10 }}>
               <Sparkles size={14} color="#f59e0b" />
               <span>ĐĂNG NHẬP NHANH TÀI KHOẢN MẪU (Pass: 123456)</span>
             </div>
@@ -299,11 +299,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultTa
                 style={{
                   padding: '8px 4px',
                   borderRadius: 6,
-                  border: '1px solid #cbd5e1',
-                  background: '#f8fafc',
+                  border: '1px solid #E7E8EA',
+                  background: '#F5F5F3',
                   fontSize: 12,
                   fontWeight: 600,
-                  color: '#1e293b',
+                  color: '#101010',
                   cursor: 'pointer',
                 }}
               >
@@ -315,8 +315,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultTa
                 style={{
                   padding: '8px 4px',
                   borderRadius: 6,
-                  border: '1px solid #cbd5e1',
-                  background: '#f8fafc',
+                  border: '1px solid #E7E8EA',
+                  background: '#F5F5F3',
                   fontSize: 12,
                   fontWeight: 600,
                   color: '#059669',
@@ -331,11 +331,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultTa
                 style={{
                   padding: '8px 4px',
                   borderRadius: 6,
-                  border: '1px solid #cbd5e1',
-                  background: '#f8fafc',
+                  border: '1px solid #E7E8EA',
+                  background: '#F5F5F3',
                   fontSize: 12,
                   fontWeight: 600,
-                  color: '#2563eb',
+                  color: '#F21D2F',
                   cursor: 'pointer',
                 }}
               >

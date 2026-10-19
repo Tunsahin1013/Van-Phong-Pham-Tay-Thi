@@ -45,16 +45,16 @@ export const VouchersPage: React.FC = () => {
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 9999, backgroundColor: '#fef3c7', color: '#b45309', fontSize: 13, fontWeight: 700, marginBottom: 8 }}>
           <Tag size={16} /> KHO MÃ ƯU ĐÃI STATIONERY SHOP
         </div>
-        <h1 style={{ fontSize: 28, fontWeight: 800, color: '#0f172a', marginBottom: 10 }}>
+        <h1 style={{ fontSize: 28, fontWeight: 800, color: '#101010', marginBottom: 10 }}>
           Săn Voucher Giảm Giá Văn Phòng Phẩm
         </h1>
-        <p style={{ fontSize: 15, color: '#64748b' }}>
+        <p style={{ fontSize: 15, color: '#5f5e5e' }}>
           Tiết kiệm chi phí mua sắm sách vở, dụng cụ học tập và vật tư doanh nghiệp với các mã giảm giá tốt nhất tháng.
         </p>
       </div>
 
       {loading ? (
-        <div style={{ padding: 60, textAlign: 'center', color: '#64748b' }}>Đang tải danh sách voucher...</div>
+        <div style={{ padding: 60, textAlign: 'center', color: '#5f5e5e' }}>Đang tải danh sách voucher...</div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 24 }}>
           {vouchers.map((v) => {
@@ -65,7 +65,7 @@ export const VouchersPage: React.FC = () => {
                 style={{
                   backgroundColor: '#ffffff',
                   borderRadius: 16,
-                  border: isApplied ? '2px solid var(--secondary)' : '1px solid #e2e8f0',
+                  border: isApplied ? '2px solid var(--secondary)' : '1px solid #E2E3E1',
                   padding: 24,
                   boxShadow: 'var(--shadow-sm)',
                   display: 'flex',
@@ -102,35 +102,35 @@ export const VouchersPage: React.FC = () => {
                       style={{
                         padding: '6px 12px',
                         borderRadius: 8,
-                        backgroundColor: '#eff6ff',
-                        color: '#1d4ed8',
+                        backgroundColor: '#FFE5E8',
+                        color: '#D90D24',
                         fontWeight: 800,
                         fontSize: 16,
                         letterSpacing: 0.5,
-                        border: '1px dashed #bfdbfe',
+                        border: '1px dashed #FFE5E8',
                       }}
                     >
                       {v.code}
                     </span>
                     <button
                       onClick={() => handleCopyCode(v.code)}
-                      style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: 4 }}
+                      style={{ background: 'none', border: 'none', color: '#5f5e5e', cursor: 'pointer', padding: 4 }}
                       title="Sao chép mã"
                     >
                       <Copy size={16} />
                     </button>
                   </div>
 
-                  <h3 style={{ fontSize: 16, fontWeight: 700, color: '#0f172a', marginBottom: 6 }}>
+                  <h3 style={{ fontSize: 16, fontWeight: 700, color: '#101010', marginBottom: 6 }}>
                     {v.name}
                   </h3>
 
-                  <div style={{ fontSize: 13, color: '#64748b', lineHeight: 1.6, marginBottom: 16 }}>
+                  <div style={{ fontSize: 13, color: '#5f5e5e', lineHeight: 1.6, marginBottom: 16 }}>
                     <div>• Đơn tối thiểu: <strong>{i18n.currency(v.minimumOrder)}</strong></div>
                     {v.maximumDiscount > 0 && (
                       <div>• Giảm tối đa: <strong>{i18n.currency(v.maximumDiscount)}</strong></div>
                     )}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#94a3b8', fontSize: 12, marginTop: 4 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#777B80', fontSize: 12, marginTop: 4 }}>
                       <Clock size={13} /> Hạn sử dụng: {i18n.formatDate(v.endDate)}
                     </div>
                   </div>

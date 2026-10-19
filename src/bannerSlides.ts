@@ -23,8 +23,8 @@ export const bannerSlides: BannerSlide[] = [
     ctaLink: '/products',
     secondaryCtaText: 'Xem Mã Giảm Giá',
     secondaryCtaLink: '/vouchers',
-    image: 'https://images.unsplash.com/photo-1456735190829-bb75b40dcbc7?auto=format&fit=crop&w=1200&q=80',
-    accentColor: '#2563eb',
+    image: 'https://i.pinimg.com/1200x/e4/d7/80/e4d78032c15d420f124561020ee1cb55.jpg?auto=format&fit=crop&w=1200&q=80',
+    accentColor: '#F21D2F',
   },
   {
     id: 'slide_2',
@@ -36,7 +36,7 @@ export const bannerSlides: BannerSlide[] = [
     ctaLink: '/products?categoryId=cat_giay',
     secondaryCtaText: 'Chính Sách Chiết Khấu',
     secondaryCtaLink: '/products',
-    image: 'https://images.unsplash.com/photo-1586075010923-2dd4570fb338?auto=format&fit=crop&w=1200&q=80',
+    image: 'https://i.pinimg.com/736x/3a/1b/61/3a1b6158528318b4f5391e93c7fffb78.jpg?auto=format&fit=crop&w=1200&q=80',
     accentColor: '#059669',
   },
   {
@@ -49,7 +49,7 @@ export const bannerSlides: BannerSlide[] = [
     ctaLink: '/products?categoryId=cat_phu_kien_ban_hoc',
     secondaryCtaText: 'Mua Thêm Sổ Tay',
     secondaryCtaLink: '/products?categoryId=cat_so_tay',
-    image: 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=1200&q=80',
+    image: 'https://i.pinimg.com/736x/84/63/65/8463656b904d9a74937ca802a0098bf0.jpg?auto=format&fit=crop&w=1200&q=80',
     accentColor: '#7c3aed',
   },
 ];

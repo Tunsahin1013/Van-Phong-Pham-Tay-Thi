@@ -99,7 +99,7 @@ export const WalletPage: React.FC = () => {
 
   return (
     <div className="container" style={{ padding: '32px 20px 60px' }}>
-      <h1 style={{ fontSize: 24, fontWeight: 800, color: '#0f172a', marginBottom: 24 }}>
+      <h1 style={{ fontSize: 24, fontWeight: 800, color: '#101010', marginBottom: 24 }}>
         Ví Điện Tử & Điểm Thưởng Stationery Pay
       </h1>
 
@@ -108,7 +108,7 @@ export const WalletPage: React.FC = () => {
         {/* Wallet Balance Card */}
         <div
           style={{
-            background: 'linear-gradient(135deg, #1e40af 0%, #2563eb 100%)',
+            background: 'linear-gradient(135deg, #101010 0%, #F21D2F 100%)',
             borderRadius: 16,
             padding: 28,
             color: '#ffffff',
@@ -120,7 +120,7 @@ export const WalletPage: React.FC = () => {
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
-              <span style={{ fontSize: 13, color: '#bfdbfe', fontWeight: 600, letterSpacing: 0.5 }}>
+              <span style={{ fontSize: 13, color: '#FFE5E8', fontWeight: 600, letterSpacing: 0.5 }}>
                 SỐ DƯ KHẢ DỤNG
               </span>
               <div style={{ fontSize: 36, fontWeight: 900, marginTop: 4 }}>
@@ -139,7 +139,7 @@ export const WalletPage: React.FC = () => {
                 padding: '10px 20px',
                 borderRadius: 8,
                 backgroundColor: '#ffffff',
-                color: '#1e40af',
+                color: '#101010',
                 fontWeight: 700,
                 fontSize: 14,
                 border: 'none',
@@ -152,7 +152,7 @@ export const WalletPage: React.FC = () => {
             >
               <PlusCircle size={18} /> Nạp Tiền Vào Ví
             </button>
-            <span style={{ fontSize: 12, color: '#dbeafe' }}>
+            <span style={{ fontSize: 12, color: '#FFE5E8' }}>
               ✓ Thanh toán đơn hàng không cần thẻ, hoàn tiền tích điểm
             </span>
           </div>
@@ -213,15 +213,15 @@ export const WalletPage: React.FC = () => {
       </div>
 
       {/* Transaction History Section */}
-      <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #e2e8f0', padding: 24 }}>
-        <h3 style={{ fontSize: 18, fontWeight: 700, color: '#0f172a', marginBottom: 16 }}>
+      <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #E2E3E1', padding: 24 }}>
+        <h3 style={{ fontSize: 18, fontWeight: 700, color: '#101010', marginBottom: 16 }}>
           Lịch Sử Giao Dịch Ví
         </h3>
 
         {loading ? (
-          <div style={{ padding: 40, textAlign: 'center', color: '#64748b' }}>Đang tải lịch sử giao dịch...</div>
+          <div style={{ padding: 40, textAlign: 'center', color: '#5f5e5e' }}>Đang tải lịch sử giao dịch...</div>
         ) : transactions.length === 0 ? (
-          <div style={{ padding: 40, textAlign: 'center', color: '#94a3b8' }}>
+          <div style={{ padding: 40, textAlign: 'center', color: '#777B80' }}>
             Chưa có giao dịch phát sinh nào trong ví.
           </div>
         ) : (
@@ -243,7 +243,7 @@ export const WalletPage: React.FC = () => {
                   const isRefund = tx.type === 'REFUND';
                   return (
                     <tr key={tx.id}>
-                      <td style={{ color: '#64748b', fontSize: 13 }}>{i18n.formatDate(tx.createdAt)}</td>
+                      <td style={{ color: '#5f5e5e', fontSize: 13 }}>{i18n.formatDate(tx.createdAt)}</td>
                       <td>
                         <span
                           style={{
@@ -254,8 +254,8 @@ export const WalletPage: React.FC = () => {
                             borderRadius: 6,
                             fontSize: 12,
                             fontWeight: 700,
-                            backgroundColor: isDeposit ? '#dbeafe' : isRefund ? '#ede9fe' : '#fee2e2',
-                            color: isDeposit ? '#1d4ed8' : isRefund ? '#6d28d9' : '#b91c1c',
+                            backgroundColor: isDeposit ? '#FFE5E8' : isRefund ? '#ede9fe' : '#FFE5E8',
+                            color: isDeposit ? '#D90D24' : isRefund ? '#6d28d9' : '#b91c1c',
                           }}
                         >
                           {isDeposit ? <ArrowDownLeft size={14} /> : isRefund ? <RotateCcw size={14} /> : <ArrowUpRight size={14} />}
@@ -264,11 +264,11 @@ export const WalletPage: React.FC = () => {
                       </td>
                       <td style={{ fontWeight: 500 }}>{tx.description}</td>
                       <td>
-                        <strong style={{ color: isDeposit || isRefund ? '#059669' : '#dc2626' }}>
+                        <strong style={{ color: isDeposit || isRefund ? '#059669' : '#D90D24' }}>
                           {isDeposit || isRefund ? '+' : '-'}{i18n.currency(tx.amount)}
                         </strong>
                       </td>
-                      <td style={{ color: '#475569' }}>{i18n.currency(tx.balanceAfter)}</td>
+                      <td style={{ color: '#5f5e5e' }}>{i18n.currency(tx.balanceAfter)}</td>
                       <td>
                         <span style={{ color: '#059669', fontWeight: 600, fontSize: 12 }}>
                           ✓ Thành công
@@ -304,9 +304,9 @@ export const WalletPage: React.FC = () => {
                         padding: '10px 4px',
                         borderRadius: 8,
                         border: '1px solid',
-                        borderColor: depositAmount === amt ? 'var(--primary)' : '#cbd5e1',
+                        borderColor: depositAmount === amt ? 'var(--primary)' : '#E7E8EA',
                         backgroundColor: depositAmount === amt ? 'var(--primary-light)' : '#ffffff',
-                        color: depositAmount === amt ? 'var(--primary)' : '#1e293b',
+                        color: depositAmount === amt ? 'var(--primary)' : '#101010',
                         fontWeight: 700,
                         fontSize: 13,
                         cursor: 'pointer',
@@ -330,7 +330,7 @@ export const WalletPage: React.FC = () => {
                 />
               </div>
 
-              <div style={{ padding: 12, borderRadius: 8, backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', fontSize: 12, color: '#64748b' }}>
+              <div style={{ padding: 12, borderRadius: 8, backgroundColor: '#F5F5F3', border: '1px solid #E2E3E1', fontSize: 12, color: '#5f5e5e' }}>
                 💡 Hệ thống sẽ tự động ghi nhận số dư tức thì sau khi bấm xác nhận nạp tiền.
               </div>
             </div>
@@ -353,7 +353,7 @@ export const WalletPage: React.FC = () => {
               <button className="modal-close-btn" onClick={() => setShowRedeemModal(false)}>✕</button>
             </div>
             <div className="modal-body">
-              <p style={{ fontSize: 13, color: '#64748b', marginBottom: 16 }}>
+              <p style={{ fontSize: 13, color: '#5f5e5e', marginBottom: 16 }}>
                 Điểm tích lũy hiện có: <strong style={{ color: '#059669' }}>{walletInfo.loyaltyPoints} điểm</strong>
               </p>
 
@@ -372,7 +372,7 @@ export const WalletPage: React.FC = () => {
                       padding: 14,
                       borderRadius: 10,
                       border: '1px solid',
-                      borderColor: selectedPoints === opt.points ? '#059669' : '#e2e8f0',
+                      borderColor: selectedPoints === opt.points ? '#059669' : '#E2E3E1',
                       backgroundColor: selectedPoints === opt.points ? '#ecfdf5' : '#ffffff',
                       cursor: 'pointer',
                     }}
