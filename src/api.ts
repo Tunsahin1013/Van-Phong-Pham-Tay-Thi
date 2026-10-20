@@ -285,3 +285,13 @@ export const usersAPI = {
       method: 'DELETE',
     }),
 };
+
+// Nội dung tĩnh của cửa hàng (banner, thông báo, thông tin thương hiệu và footer).
+export const siteContentAPI = {
+  get: () => request<{ success: boolean; data: any }>('/site-content'),
+  update: (data: any) =>
+    request<{ success: boolean; message: string; data: any }>('/site-content', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+};

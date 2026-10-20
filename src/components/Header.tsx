@@ -17,7 +17,7 @@ import { useAuth } from '../contexts/AuthContext.tsx';
 import { useCart } from '../contexts/CartContext.tsx';
 import { useNotification } from '../contexts/NotificationContext.tsx';
 import { i18n } from '../i18n.ts';
-import { categoriesAPI } from '../api.ts';
+import { categoriesAPI, siteContentAPI } from '../api.ts';
 
 interface HeaderProps {
   onOpenAuthModal?: () => void;
@@ -34,6 +34,15 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAuthModal }) => {
   const [showNotifMenu, setShowNotifMenu] = useState(false);
   const [menuCategories, setMenuCategories] = useState<any[]>([]);
   const [activeMegaMenu, setActiveMegaMenu] = useState<string | null>(null);
+  const [siteContent, setSiteContent] = useState<any>(null);
+
+  useEffect(() => {
+    let active = true;
+    siteContentAPI.get()
+      .then((res) => { if (active && res.success && res.data) setSiteContent(res.data); })
+      .catch((err) => console.error('Không tải được nội dung header:', err));
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -55,9 +64,9 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAuthModal }) => {
       {/* Top Bar Announcement */}
       <div className="top-announcement">
         <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span>🎉 Miễn phí vận chuyển cho đơn hàng từ 300.000đ | Giao hỏa tốc 2H tại TP.HCM & Hà Nội</span>
+          <span>{siteContent?.announcementText || '🎉 Miễn phí vận chuyển cho đơn hàng từ 300.000đ | Giao hỏa tốc 2H tại TP.HCM & Hà Nội'}</span>
           <div>
-            <span>Hotline hỗ trợ doanh nghiệp: <strong>1900 6868</strong></span>
+            <span>{siteContent?.hotlineLabel || 'Hotline hỗ trợ doanh nghiệp'}: <strong>{siteContent?.hotline || '1900 6868'}</strong></span>
           </div>
         </div>
       </div>
@@ -106,9 +115,9 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAuthModal }) => {
               <Layers size={22} />
             </div>
             <div>
-              <span>Tây Thi <span style={{ color: '#101010' }}>Stationery</span></span>
+              <span>{siteContent?.brandName || 'Tây Thi Stationery'}</span>
               <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', letterSpacing: 0.5, marginTop: -4 }}>
-                AI BẢO DÂN VĂN PHÒNG KHÔNG ĐƯỢC CHẤT
+                {siteContent?.brandTagline || 'AI BẢO DÂN VĂN PHÒNG KHÔNG ĐƯỢC CHẤT'}
               </div>
             </div>
           </Link>
