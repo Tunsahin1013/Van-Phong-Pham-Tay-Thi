@@ -33,7 +33,7 @@ export const i18n = {
   },
   paymentMethods: {
     COD: 'Thanh toán tiền mặt khi nhận hàng (COD)',
-    WALLET: 'Thanh toán bằng ví Stationery Pay',
+    WALLET: 'Phương thức thanh toán cũ (đã ngừng hỗ trợ)',
     BANKING: 'Chuyển khoản QR Ngân hàng 24/7',
   },
   roles: {

@@ -24,7 +24,7 @@ export const userController = {
 
     // Never return password hashes
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const safeUsers = list.map(({ password: _, ...rest }) => rest);
+    const safeUsers = list.map(({ password: _, walletBalance: _legacyWalletBalance, ...rest }) => rest);
     return res.json({ success: true, data: safeUsers });
   },
 
@@ -52,11 +52,10 @@ export const userController = {
         address: address || '',
         status,
         loyaltyPoints: 0,
-        walletBalance: 0,
       });
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password: _, ...userSafe } = newUser;
+      const { password: _, walletBalance: _legacyWalletBalance, ...userSafe } = newUser;
       return res.status(201).json({ success: true, message: 'Tạo tài khoản thành công', data: userSafe });
     } catch (error) {
       return res.status(500).json({ success: false, message: 'Lỗi tạo người dùng: ' + (error as Error).message });
@@ -67,6 +66,7 @@ export const userController = {
   updateUser: (req: Request, res: Response) => {
     const { id } = req.params;
     const updates = { ...req.body };
+    delete updates.walletBalance;
 
     if (updates.password) {
       updates.password = bcrypt.hashSync(updates.password, 10);
@@ -78,7 +78,7 @@ export const userController = {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password: _, ...userSafe } = updated;
+    const { password: _, walletBalance: _legacyWalletBalance, ...userSafe } = updated;
     return res.json({ success: true, message: 'Cập nhật tài khoản thành công', data: userSafe });
   },
 

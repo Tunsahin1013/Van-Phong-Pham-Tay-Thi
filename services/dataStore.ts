@@ -63,7 +63,7 @@ class DataStoreService {
           orders: parsed.orders?.length ? parsed.orders : seed.orders,
           reviews: parsed.reviews?.length ? parsed.reviews : seed.reviews,
           inventoryLogs: parsed.inventoryLogs?.length ? parsed.inventoryLogs : seed.inventoryLogs,
-          walletTransactions: parsed.walletTransactions?.length ? parsed.walletTransactions : seed.walletTransactions,
+          walletTransactions: Array.isArray(parsed.walletTransactions) ? parsed.walletTransactions : seed.walletTransactions,
           notifications: parsed.notifications?.length ? parsed.notifications : seed.notifications,
           conversations: parsed.conversations?.length ? parsed.conversations : seed.conversations,
           chatMessages: parsed.chatMessages?.length ? parsed.chatMessages : seed.chatMessages,
@@ -100,11 +100,10 @@ class DataStoreService {
     return this.db.users.find(u => u.email.toLowerCase() === email.toLowerCase());
   }
 
-  createUser(user: Omit<UserItem, 'id' | 'createdAt' | 'updatedAt' | 'loyaltyPoints' | 'walletBalance'> & Partial<UserItem>): UserItem {
+  createUser(user: Omit<UserItem, 'id' | 'createdAt' | 'updatedAt' | 'loyaltyPoints' | 'walletBalance'> & Partial<Pick<UserItem, 'loyaltyPoints'>>): UserItem {
     const newUser: UserItem = {
       id: 'usr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
       loyaltyPoints: user.loyaltyPoints ?? 0,
-      walletBalance: user.walletBalance ?? 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       ...user,
@@ -461,25 +460,6 @@ class DataStoreService {
       }
     }
 
-    // If paid by wallet, deduct customer wallet balance
-    if (newOrder.paymentMethod === 'WALLET' && newOrder.paymentStatus === 'PAID') {
-      const customer = this.getUserById(newOrder.customerId);
-      if (customer) {
-        const balanceBefore = customer.walletBalance || 0;
-        customer.walletBalance = Math.max(0, balanceBefore - newOrder.total);
-        this.createWalletTransaction({
-          customerId: customer.id,
-          type: 'PAYMENT',
-          amount: newOrder.total,
-          balanceBefore,
-          balanceAfter: customer.walletBalance,
-          orderId: newOrder.id,
-          description: `Thanh toán đơn hàng văn phòng phẩm ${newOrder.orderCode}`,
-          status: 'SUCCESS',
-        });
-      }
-    }
-
     this.db.orders.unshift(newOrder);
 
     // Create notification for customer
@@ -555,27 +535,6 @@ class DataStoreService {
               newStock: prod.stock,
               note: `Hoàn kho do hủy đơn hàng ${order.orderCode}`,
               createdBy: 'Hệ thống tự động',
-            });
-          }
-        }
-
-        // Refund wallet balance if paid by wallet
-        if (order.paymentMethod === 'WALLET' && order.paymentStatus === 'PAID') {
-          const customer = this.getUserById(order.customerId);
-          if (customer) {
-            const balanceBefore = customer.walletBalance || 0;
-            customer.walletBalance += order.total;
-            order.paymentStatus = 'REFUNDED';
-
-            this.createWalletTransaction({
-              customerId: customer.id,
-              type: 'REFUND',
-              amount: order.total,
-              balanceBefore,
-              balanceAfter: customer.walletBalance,
-              orderId: order.id,
-              description: `Hoàn tiền ví đơn hàng ${order.orderCode} bị hủy`,
-              status: 'SUCCESS',
             });
           }
         }
@@ -659,55 +618,6 @@ class DataStoreService {
     return deleted;
   }
 
-  // --- WALLET ---
-  getWalletTransactions(customerId?: string): WalletTransactionItem[] {
-    if (customerId) {
-      return this.db.walletTransactions
-        .filter(t => t.customerId === customerId)
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    }
-    return this.db.walletTransactions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  }
-
-  createWalletTransaction(tx: Omit<WalletTransactionItem, 'id' | 'createdAt'>): WalletTransactionItem {
-    const newTx: WalletTransactionItem = {
-      id: 'tx_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
-      createdAt: new Date().toISOString(),
-      ...tx,
-    };
-    this.db.walletTransactions.unshift(newTx);
-    this.persist();
-    return newTx;
-  }
-
-  depositWallet(customerId: string, amount: number, methodDescription: string = 'Nạp tiền vào ví'): { success: boolean; newBalance: number } {
-    const customer = this.getUserById(customerId);
-    if (!customer) return { success: false, newBalance: 0 };
-
-    const balanceBefore = customer.walletBalance || 0;
-    customer.walletBalance = balanceBefore + amount;
-
-    this.createWalletTransaction({
-      customerId,
-      type: 'DEPOSIT',
-      amount,
-      balanceBefore,
-      balanceAfter: customer.walletBalance,
-      description: `${methodDescription} +${amount.toLocaleString('vi-VN')}đ`,
-      status: 'SUCCESS',
-    });
-
-    this.createNotification({
-      userId: customerId,
-      title: 'Nạp ví thành công 💰',
-      message: `Bạn đã nạp thành công +${amount.toLocaleString('vi-VN')}đ vào ví Stationery Pay. Số dư hiện tại: ${customer.walletBalance.toLocaleString('vi-VN')}đ.`,
-      type: 'WALLET',
-      link: '/wallet',
-    });
-
-    this.persist();
-    return { success: true, newBalance: customer.walletBalance };
-  }
 
   redeemLoyaltyPoints(customerId: string, points: number): { success: boolean; message: string; voucher?: VoucherItem } {
     const customer = this.getUserById(customerId);

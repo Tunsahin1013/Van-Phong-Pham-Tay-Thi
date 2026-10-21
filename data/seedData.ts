@@ -10,7 +10,7 @@ export interface UserItem {
   address: string;
   status: 'ACTIVE' | 'INACTIVE';
   loyaltyPoints: number;
-  walletBalance: number;
+  walletBalance?: number;
   avatar?: string;
   createdAt: string;
   updatedAt: string;
@@ -207,7 +207,6 @@ export function getInitialSeedData() {
       address: '72 Lê Thánh Tôn, Bến Nghé, Quận 1, TP. Hồ Chí Minh',
       status: 'ACTIVE',
       loyaltyPoints: 0,
-      walletBalance: 5000000,
       createdAt: '2026-01-01T08:00:00.000Z',
       updatedAt: '2026-01-01T08:00:00.000Z',
     },
@@ -221,7 +220,6 @@ export function getInitialSeedData() {
       address: '45 Đinh Tiên Hoàng, Đa Kao, Quận 1, TP. Hồ Chí Minh',
       status: 'ACTIVE',
       loyaltyPoints: 0,
-      walletBalance: 2500000,
       createdAt: '2026-01-05T08:00:00.000Z',
       updatedAt: '2026-01-05T08:00:00.000Z',
     },
@@ -235,7 +233,6 @@ export function getInitialSeedData() {
       address: '12 Võ Văn Tần, Phường 6, Quận 3, TP. Hồ Chí Minh',
       status: 'ACTIVE',
       loyaltyPoints: 0,
-      walletBalance: 3000000,
       createdAt: '2026-01-10T08:00:00.000Z',
       updatedAt: '2026-01-10T08:00:00.000Z',
     },
@@ -249,7 +246,6 @@ export function getInitialSeedData() {
       address: '154 Hai Bà Trưng, Tân Định, Quận 1, TP. Hồ Chí Minh',
       status: 'ACTIVE',
       loyaltyPoints: 0,
-      walletBalance: 1200000,
       createdAt: '2026-01-12T09:00:00.000Z',
       updatedAt: '2026-01-12T09:00:00.000Z',
     },
@@ -263,7 +259,6 @@ export function getInitialSeedData() {
       address: '89 Nguyễn Đình Chiểu, Phường 4, Quận 3, TP. Hồ Chí Minh',
       status: 'ACTIVE',
       loyaltyPoints: 0,
-      walletBalance: 800000,
       createdAt: '2026-01-15T09:00:00.000Z',
       updatedAt: '2026-01-15T09:00:00.000Z',
     },
@@ -277,7 +272,6 @@ export function getInitialSeedData() {
       address: '23 Phan Đăng Lưu, Phường 3, Bình Thạnh, TP. Hồ Chí Minh',
       status: 'ACTIVE',
       loyaltyPoints: 0,
-      walletBalance: 950000,
       createdAt: '2026-01-18T09:00:00.000Z',
       updatedAt: '2026-01-18T09:00:00.000Z',
     },
@@ -291,7 +285,6 @@ export function getInitialSeedData() {
       address: '77 Bạch Đằng, Phường 2, Tân Bình, TP. Hồ Chí Minh',
       status: 'ACTIVE',
       loyaltyPoints: 0,
-      walletBalance: 1100000,
       createdAt: '2026-01-20T09:00:00.000Z',
       updatedAt: '2026-01-20T09:00:00.000Z',
     },
@@ -305,7 +298,6 @@ export function getInitialSeedData() {
       address: '56 Trường Chinh, Tân Hưng Thuận, Quận 12, TP. Hồ Chí Minh',
       status: 'ACTIVE',
       loyaltyPoints: 0,
-      walletBalance: 700000,
       createdAt: '2026-01-22T09:00:00.000Z',
       updatedAt: '2026-01-22T09:00:00.000Z',
     },
@@ -319,7 +311,6 @@ export function getInitialSeedData() {
       address: '280 An Dương Vương, Phường 4, Quận 5, TP. Hồ Chí Minh',
       status: 'ACTIVE',
       loyaltyPoints: 340,
-      walletBalance: 650000,
       createdAt: '2026-02-01T10:00:00.000Z',
       updatedAt: '2026-02-01T10:00:00.000Z',
     },
@@ -333,7 +324,6 @@ export function getInitialSeedData() {
       address: '15 Tôn Đức Thắng, Bến Nghé, Quận 1, TP. Hồ Chí Minh',
       status: 'ACTIVE',
       loyaltyPoints: 120,
-      walletBalance: 200000,
       createdAt: '2026-02-05T10:00:00.000Z',
       updatedAt: '2026-02-05T10:00:00.000Z',
     },
@@ -347,7 +337,6 @@ export function getInitialSeedData() {
       address: '42 Trần Phú, Phường 4, Quận 5, TP. Hồ Chí Minh',
       status: 'ACTIVE',
       loyaltyPoints: 510,
-      walletBalance: 850000,
       createdAt: '2026-02-08T10:00:00.000Z',
       updatedAt: '2026-02-08T10:00:00.000Z',
     },
@@ -361,7 +350,6 @@ export function getInitialSeedData() {
       address: '68 Pasteur, Bến Nghé, Quận 1, TP. Hồ Chí Minh',
       status: 'ACTIVE',
       loyaltyPoints: 90,
-      walletBalance: 150000,
       createdAt: '2026-02-10T10:00:00.000Z',
       updatedAt: '2026-02-10T10:00:00.000Z',
     },
@@ -375,7 +363,6 @@ export function getInitialSeedData() {
       address: '91 CMT8, Bến Thành, Quận 1, TP. Hồ Chí Minh',
       status: 'ACTIVE',
       loyaltyPoints: 260,
-      walletBalance: 400000,
       createdAt: '2026-02-12T10:00:00.000Z',
       updatedAt: '2026-02-12T10:00:00.000Z',
     },
@@ -389,7 +376,6 @@ export function getInitialSeedData() {
       address: '104 Điện Biên Phủ, Đa Kao, Quận 1, TP. Hồ Chí Minh',
       status: 'ACTIVE',
       loyaltyPoints: 410,
-      walletBalance: 1200000,
       createdAt: '2026-02-15T10:00:00.000Z',
       updatedAt: '2026-02-15T10:00:00.000Z',
     },
@@ -403,7 +389,6 @@ export function getInitialSeedData() {
       address: '33 Nam Kỳ Khởi Nghĩa, Phường 7, Quận 3, TP. Hồ Chí Minh',
       status: 'ACTIVE',
       loyaltyPoints: 180,
-      walletBalance: 320000,
       createdAt: '2026-02-18T10:00:00.000Z',
       updatedAt: '2026-02-18T10:00:00.000Z',
     },
@@ -417,7 +402,6 @@ export function getInitialSeedData() {
       address: '55 Hoàng Văn Thụ, Phường 15, Phú Nhuận, TP. Hồ Chí Minh',
       status: 'ACTIVE',
       loyaltyPoints: 60,
-      walletBalance: 90000,
       createdAt: '2026-02-20T10:00:00.000Z',
       updatedAt: '2026-02-20T10:00:00.000Z',
     },
@@ -431,7 +415,6 @@ export function getInitialSeedData() {
       address: '22 Nguyễn Huệ, Bến Nghé, Quận 1, TP. Hồ Chí Minh',
       status: 'ACTIVE',
       loyaltyPoints: 320,
-      walletBalance: 580000,
       createdAt: '2026-02-22T10:00:00.000Z',
       updatedAt: '2026-02-22T10:00:00.000Z',
     },
@@ -445,7 +428,6 @@ export function getInitialSeedData() {
       address: '18 Cộng Hòa, Phường 12, Tân Bình, TP. Hồ Chí Minh',
       status: 'ACTIVE',
       loyaltyPoints: 150,
-      walletBalance: 250000,
       createdAt: '2026-02-25T10:00:00.000Z',
       updatedAt: '2026-02-25T10:00:00.000Z',
     },
@@ -1492,7 +1474,7 @@ export function getInitialSeedData() {
       customerEmail: 'customer@stationery.vn',
       shippingAddress: '280 An Dương Vương, Phường 4, Quận 5, TP. Hồ Chí Minh',
       note: 'Giao trong giờ hành chính, gọi trước khi tới 15 phút.',
-      paymentMethod: 'WALLET',
+      paymentMethod: 'BANKING',
       paymentStatus: 'PAID',
       orderStatus: 'COMPLETED',
       items: [
@@ -1608,7 +1590,7 @@ export function getInitialSeedData() {
       customerEmail: 'thuyduong.le@gmail.com',
       shippingAddress: '42 Trần Phú, Phường 4, Quận 5, TP. Hồ Chí Minh',
       note: 'Giao buổi sáng.',
-      paymentMethod: 'WALLET',
+      paymentMethod: 'BANKING',
       paymentStatus: 'PAID',
       orderStatus: 'PREPARING',
       items: [
@@ -1953,42 +1935,8 @@ export function getInitialSeedData() {
     },
   ];
 
-  const walletTransactions: WalletTransactionItem[] = [
-    {
-      id: 'tx_1',
-      customerId: 'usr_cust_1',
-      type: 'DEPOSIT',
-      amount: 1000000,
-      balanceBefore: 0,
-      balanceAfter: 1000000,
-      description: 'Nạp tiền vào ví qua cổng thanh toán QR Ngân Hàng',
-      status: 'SUCCESS',
-      createdAt: '2026-02-10T09:00:00.000Z',
-    },
-    {
-      id: 'tx_2',
-      customerId: 'usr_cust_1',
-      type: 'PAYMENT',
-      amount: 430000,
-      balanceBefore: 1000000,
-      balanceAfter: 570000,
-      orderId: 'ord_1',
-      description: 'Thanh toán đơn hàng văn phòng phẩm ORD-20260220-001',
-      status: 'SUCCESS',
-      createdAt: '2026-02-20T10:15:00.000Z',
-    },
-    {
-      id: 'tx_3',
-      customerId: 'usr_cust_1',
-      type: 'DEPOSIT',
-      amount: 80000,
-      balanceBefore: 570000,
-      balanceAfter: 650000,
-      description: 'Nạp tiền vào ví khuyến mãi hoàn tiền sinh nhật thành viên',
-      status: 'SUCCESS',
-      createdAt: '2026-02-22T08:00:00.000Z',
-    },
-  ];
+  const walletTransactions: WalletTransactionItem[] = [];
+
 
   const notifications: NotificationItem[] = [
     {
@@ -2014,11 +1962,11 @@ export function getInitialSeedData() {
     {
       id: 'notif_3',
       userId: 'usr_cust_1',
-      title: 'Nạp tiền vào ví thành công',
-      message: 'Tài khoản ví Stationery Pay của bạn vừa được cộng +1.000.000đ. Số dư hiện tại là 650.000đ.',
-      type: 'WALLET',
+      title: 'Ưu đãi thành viên cập nhật',
+      message: 'Khám phá các mã giảm giá và ưu đãi thành viên mới tại Tây Thi.',
+      type: 'SYSTEM',
       isRead: true,
-      link: '/wallet',
+      link: '/vouchers',
       createdAt: '2026-02-10T09:01:00.000Z',
     },
     {

@@ -5,7 +5,6 @@ import {
   Bell,
   User as UserIcon,
   Search,
-  Wallet,
   LogOut,
   Shield,
   Briefcase,
@@ -25,7 +24,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ onOpenAuthModal }) => {
   const navigate = useNavigate();
-  const { currentUser, role, logout, switchRoleDemo } = useAuth();
+  const { currentUser, role, logout } = useAuth();
   const { itemCount } = useCart();
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotification();
 
@@ -110,43 +109,35 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAuthModal }) => {
       <header className="main-header">
         <div className="container header-inner">
           {/* Logo */}
-          <Link to="/" className="logo-brand">
-            <div className="logo-icon-box">
-              <Layers size={22} />
+          <Link to="/" className="logo-brand" aria-label="Tây Thi - Trang chủ">
+            <div className="logo-icon-box" aria-hidden="true">
+              <Layers size={25} strokeWidth={2.5} />
             </div>
-            <div>
-              <span>{siteContent?.brandName || 'Tây Thi Stationery'}</span>
-              <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', letterSpacing: 0.5, marginTop: -4 }}>
-                {siteContent?.brandTagline || 'AI BẢO DÂN VĂN PHÒNG KHÔNG ĐƯỢC CHẤT'}
-              </div>
+            <div className="logo-copy">
+              <span className="logo-wordmark" aria-label="Tây Thi">
+                Tây <span className="logo-wordmark-accent">Thi</span>
+              </span>
+              <span className="logo-tagline">VĂN PHÒNG PHẨM</span>
             </div>
           </Link>
 
           {/* Search Form */}
-          <form className="search-box-header" onSubmit={handleSearch}>
+          <form className="search-box-header tt-search-box-header" onSubmit={handleSearch} role="search" aria-label="Tìm kiếm sản phẩm">
             <input
               type="text"
               className="search-input-header"
-              placeholder="Tìm kiếm bút viết, tập vở, giấy in Double A, Deli..."
+              placeholder="Tìm kiếm sản phẩm, danh mục, thương hiệu..."
+              aria-label="Tìm kiếm sản phẩm, danh mục, thương hiệu"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <button type="submit" className="search-btn-header">
+            <button type="submit" className="search-btn-header" aria-label="Tìm kiếm">
               <Search size={16} />
             </button>
           </form>
 
           {/* Header Action Icons */}
           <div className="header-actions">
-            {/* Wallet button if logged in as customer */}
-            {currentUser && currentUser.role === 'CUSTOMER' && (
-              <Link to="/wallet" className="header-action-btn" title="Ví Stationery Pay">
-                <Wallet size={18} color="#059669" />
-                <span style={{ fontWeight: 600, color: '#059669' }}>
-                  {i18n.currency(currentUser.walletBalance || 0)}
-                </span>
-              </Link>
-            )}
 
             {/* Admin or Employee workspace quick links */}
             {role === 'ADMIN' && (
@@ -156,7 +147,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAuthModal }) => {
               </Link>
             )}
             {role === 'EMPLOYEE' && (
-              <Link to="/employee" className="header-action-btn" style={{ borderColor: '#059669', color: '#059669' }}>
+              <Link to="/employee" className="header-action-btn" style={{ borderColor: '#777B80', color: '#202124' }}>
                 <Briefcase size={18} />
                 <span>Bàn Làm Việc NV</span>
               </Link>
@@ -218,7 +209,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAuthModal }) => {
                           style={{
                             padding: '12px 16px',
                             borderBottom: '1px solid #EEEEEC',
-                            backgroundColor: n.isRead ? '#ffffff' : '#f0fdf4',
+                            backgroundColor: n.isRead ? '#ffffff' : '#fff0f1',
                             cursor: 'pointer',
                           }}
                         >
@@ -289,13 +280,6 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAuthModal }) => {
                     >
                       <ShoppingBag size={16} /> Đơn hàng của tôi
                     </Link>
-                    <Link
-                      to="/wallet"
-                      onClick={() => setShowUserMenu(false)}
-                      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', fontSize: 13, color: '#202124' }}
-                    >
-                      <Wallet size={16} /> Ví tiền & Điểm thưởng
-                    </Link>
                     {role === 'ADMIN' && (
                       <Link
                         to="/admin"
@@ -345,10 +329,10 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAuthModal }) => {
       </header>
 
       {/* Horizontal category navigation with database-backed mega menu */}
-      <nav className="sub-navbar tt-category-nav" onMouseLeave={() => setActiveMegaMenu(null)}>
+      <nav className="sub-navbar tt-category-nav" aria-label="Danh mục sản phẩm" onMouseLeave={() => setActiveMegaMenu(null)}>
         <div className="container tt-nav-inner"><div className="nav-links tt-nav-links">
-          <Link to="/" className="nav-link-item">Trang chủ</Link>
-          <Link to="/products" className="nav-link-item">Tất cả sản phẩm</Link>
+          <Link to="/" className="nav-link-item tt-nav-home">Trang chủ</Link>
+          <Link to="/products" className="nav-link-item tt-nav-all-products">Tất cả sản phẩm</Link>
           {menuCategories.slice(0, 7).map((category) => (
             <div key={category.id} className={`tt-nav-category ${activeMegaMenu === category.id ? 'is-open' : ''}`} onMouseEnter={() => setActiveMegaMenu(category.id)}>
               <Link to={`/products?categoryId=${encodeURIComponent(category.id)}`} className="nav-link-item tt-nav-category-link" aria-haspopup="true" aria-expanded={activeMegaMenu === category.id} onClick={() => setActiveMegaMenu(null)}>{category.name}<ChevronDown size={13} /></Link>
@@ -365,7 +349,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAuthModal }) => {
               </div>}
             </div>
           ))}
-          <Link to="/vouchers" className="nav-link-item tt-nav-promo">Khuyến mãi</Link>
+          <Link to="/vouchers" className="nav-link-item tt-nav-promo"><Sparkles size={14} aria-hidden="true" /> Khuyến mãi</Link>
           <Link to="/orders" className="nav-link-item">Tra cứu đơn hàng</Link>
         </div></div>
       </nav>

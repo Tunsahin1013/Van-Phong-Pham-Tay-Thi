@@ -3,7 +3,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import {
   ShieldCheck,
   CreditCard,
-  Wallet,
   Truck,
   QrCode,
   CheckCircle2,
@@ -20,14 +19,14 @@ import { i18n } from '../../i18n.ts';
 export const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
   const { items, subtotal, discount, shippingFee, total, appliedVoucher, clearCart } = useCart();
-  const { currentUser, isAuthenticated, refreshUser } = useAuth();
+  const { currentUser, refreshUser } = useAuth();
   const { showToast } = useToast();
 
   const [customerName, setCustomerName] = useState(currentUser?.name || '');
   const [customerPhone, setCustomerPhone] = useState(currentUser?.phone || '');
   const [shippingAddress, setShippingAddress] = useState(currentUser?.address || '');
   const [note, setNote] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<'COD' | 'WALLET' | 'BANKING'>('COD');
+  const [paymentMethod, setPaymentMethod] = useState<'COD' | 'BANKING'>('COD');
   const [loading, setLoading] = useState(false);
 
   // If cart is empty, redirect
@@ -47,17 +46,6 @@ export const CheckoutPage: React.FC = () => {
     if (!customerName.trim() || !customerPhone.trim() || !shippingAddress.trim()) {
       showToast('Vui lòng điền đầy đủ họ tên, số điện thoại và địa chỉ giao hàng', 'warning');
       return;
-    }
-
-    if (paymentMethod === 'WALLET') {
-      const balance = currentUser?.walletBalance || 0;
-      if (balance < total) {
-        showToast(
-          `Số dư ví (${i18n.currency(balance)}) không đủ thanh toán đơn ${i18n.currency(total)}. Vui lòng chọn phương thức COD hoặc nạp thêm ví.`,
-          'error'
-        );
-        return;
-      }
     }
 
     setLoading(true);
@@ -195,39 +183,7 @@ export const CheckoutPage: React.FC = () => {
                   </div>
                 </label>
 
-                {/* Method 2: Wallet */}
-                <label
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 16,
-                    padding: 16,
-                    borderRadius: 12,
-                    border: '1px solid',
-                    borderColor: paymentMethod === 'WALLET' ? 'var(--primary)' : '#E2E3E1',
-                    backgroundColor: paymentMethod === 'WALLET' ? 'var(--primary-light)' : '#ffffff',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    checked={paymentMethod === 'WALLET'}
-                    onChange={() => setPaymentMethod('WALLET')}
-                  />
-                  <Wallet size={24} color="#059669" />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 700, fontSize: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span>Ví Điện Tử Stationery Pay</span>
-                      <span style={{ fontSize: 12, color: '#059669', fontWeight: 600 }}>
-                        (Số dư: {i18n.currency(currentUser?.walletBalance || 0)})
-                      </span>
-                    </div>
-                    <div style={{ fontSize: 12, color: '#5f5e5e' }}>Thanh toán tức thì 1 chạm, nhận ngay điểm thưởng x2</div>
-                  </div>
-                </label>
-
-                {/* Method 3: Banking QR */}
+                {/* Bank transfer QR */}
                 <label
                   style={{
                     display: 'flex',

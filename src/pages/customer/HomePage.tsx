@@ -54,7 +54,10 @@ export const HomePage: React.FC = () => {
   const [vouchers, setVouchers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [siteContent, setSiteContent] = useState<any>(null);
-  const slides = siteContent?.heroSlides?.length ? siteContent.heroSlides : bannerSlides;
+  // Use the local bannerSlides.ts as the source of truth for the homepage hero.
+  // Site content from the API still powers brand-independent content such as perks,
+  // but an older heroSlides array in MongoDB must not silently replace updated image URLs.
+  const slides = bannerSlides;
   const perks = siteContent?.perks?.length ? siteContent.perks : [
     { id: 'authentic', title: 'Chính Hãng 100%', description: 'Phân phối trực tiếp từ Thiên Long, Deli, Pentel', icon: 'Award' },
     { id: 'delivery', title: 'Giao Hỏa Tốc 2H', description: 'Miễn phí giao hàng nội thành đơn từ 300K', icon: 'Truck' },
@@ -105,16 +108,28 @@ export const HomePage: React.FC = () => {
   }, []);
 
   const slide = slides[currentSlide % slides.length];
+  const slideTitleText = String(slide?.title ?? 'VĂN PHÒNG PHẨM TÂY THI');
+  const slideTitleWords = slideTitleText.trim().split(/\s+/).filter(Boolean);
+  const splitTitleAt = Math.ceil(slideTitleWords.length / 2);
+  const titleMain = slide.accentTitle || slideTitleWords.length < 4
+    ? slideTitleText
+    : slideTitleWords.slice(0, splitTitleAt).join(' ');
+  const titleAccent = slide.accentTitle || (slideTitleWords.length >= 4
+    ? slideTitleWords.slice(splitTitleAt).join(' ')
+    : '');
 
   return (
     <div>
       {/* Hero Banner Slider */}
       <section className="hero-slider-section">
         <div className="container">
-          <div className="hero-slide-card" style={{ position: 'relative' }}>
+          <div className="hero-slide-card tt-hero-card" style={{ position: 'relative' }}>
             <div className="hero-slide-content">
-              <span className="hero-badge">{slide.badge}</span>
-              <h1 className="hero-title">{slide.title}</h1>
+              <span className="hero-badge"><span className="hero-badge-brand">TÂY THI</span><span className="hero-badge-divider" aria-hidden="true">/</span>{slide.badge}</span>
+              <h1 className="hero-title">
+                <span className="hero-title-main">{titleMain}</span>
+                {titleAccent && <span className="hero-title-accent">{titleAccent}</span>}
+              </h1>
               <h3 className="hero-subtitle">{slide.subtitle}</h3>
               <p className="hero-desc">{slide.description}</p>
               <div className="hero-cta-group">
@@ -128,18 +143,13 @@ export const HomePage: React.FC = () => {
             </div>
 
             <div className="hero-slide-image-box">
-              <img src={slide.image} alt={slide.title} />
-              <div
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  background: 'linear-gradient(to right, rgba(16,16,16,0.04), rgba(16,16,16,0.08))',
-                }}
-              />
+              <img src={slide.image} alt={`${slide.title}${slide.accentTitle ? ` ${slide.accentTitle}` : ''}`} />
+              <div className="hero-image-overlay" aria-hidden="true" />
             </div>
 
             {/* Slide Navigation Arrows */}
             <button
+              aria-label="Banner trước"
               onClick={() => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length)}
               style={{
                 position: 'absolute',
@@ -163,6 +173,7 @@ export const HomePage: React.FC = () => {
             </button>
 
             <button
+              aria-label="Banner tiếp theo"
               onClick={() => setCurrentSlide((prev) => (prev + 1) % slides.length)}
               style={{
                 position: 'absolute',
@@ -184,12 +195,25 @@ export const HomePage: React.FC = () => {
             >
               <ChevronRight size={20} />
             </button>
+
+            <div className="hero-pagination" aria-label="Chọn banner">
+              {slides.map((item: any, index: number) => (
+                <button
+                  key={item.id || index}
+                  type="button"
+                  className={`hero-pagination-dot ${index === currentSlide ? 'is-active' : ''}`}
+                  aria-label={`Chuyển tới banner ${index + 1}`}
+                  aria-current={index === currentSlide ? 'true' : undefined}
+                  onClick={() => setCurrentSlide(index)}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
       {/* Core perks loaded from MongoDB site content */}
-      <section className="container">
+      <section className="container tt-perks-wrap">
         <div className="perks-grid">
           {perks.map((perk: any) => {
             const PerkIcon = perkIconMap[perk.icon] || Award;

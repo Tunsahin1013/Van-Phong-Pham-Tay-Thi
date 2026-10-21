@@ -200,17 +200,9 @@ export const inventoryAPI = {
     }),
 };
 
-export const walletAPI = {
-  getWallet: () => request<{ success: boolean; data: { balance: number; loyaltyPoints: number } }>('/wallet'),
-  deposit: (amount: number, method?: string) =>
-    request<{ success: boolean; message: string; newBalance: number }>('/wallet/deposit', {
-      method: 'POST',
-      body: JSON.stringify({ amount, method }),
-    }),
-  getTransactions: (customerId?: string) =>
-    request<{ success: boolean; data: any[] }>(`/wallet/transactions${customerId ? `?customerId=${customerId}` : ''}`),
+export const loyaltyAPI = {
   redeemPoints: (points: number) =>
-    request<{ success: boolean; message: string; voucher?: any }>('/wallet/redeem-points', {
+    request<{ success: boolean; message: string; voucher?: any }>('/loyalty/redeem-points', {
       method: 'POST',
       body: JSON.stringify({ points }),
     }),
@@ -286,12 +278,7 @@ export const usersAPI = {
     }),
 };
 
-// Nội dung tĩnh của cửa hàng (banner, thông báo, thông tin thương hiệu và footer).
+
 export const siteContentAPI = {
   get: () => request<{ success: boolean; data: any }>('/site-content'),
-  update: (data: any) =>
-    request<{ success: boolean; message: string; data: any }>('/site-content', {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }),
 };

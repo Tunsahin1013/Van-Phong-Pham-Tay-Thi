@@ -21,6 +21,15 @@ export const orderController = {
         voucherCode,
       } = req.body;
 
+      const normalizedPaymentMethod: 'COD' | 'BANKING' | null =
+        paymentMethod === 'BANKING' ? 'BANKING' : paymentMethod === 'COD' ? 'COD' : null;
+      if (!normalizedPaymentMethod) {
+        return res.status(400).json({
+          success: false,
+          message: 'Ví điện tử đã ngừng hỗ trợ. Vui lòng chọn COD hoặc chuyển khoản ngân hàng.',
+        });
+      }
+
       if (!items || !Array.isArray(items) || items.length === 0) {
         return res.status(400).json({ success: false, message: 'Giỏ hàng của bạn đang trống' });
       }
@@ -104,17 +113,6 @@ export const orderController = {
 
       const totalAmount = Math.max(0, calculatedSubtotal - discountAmount + shippingFee);
 
-      // If paying by wallet, verify sufficient balance
-      if (paymentMethod === 'WALLET') {
-        const currentBalance = req.user.walletBalance || 0;
-        if (currentBalance < totalAmount) {
-          return res.status(400).json({
-            success: false,
-            message: `Số dư ví Stationery Pay không đủ (Hiện có: ${currentBalance.toLocaleString('vi-VN')}đ, cần thanh toán: ${totalAmount.toLocaleString('vi-VN')}đ). Vui lòng nạp thêm tiền hoặc chọn phương thức COD.`,
-          });
-        }
-      }
-
       const newOrder = dataStore.createOrder({
         customerId: req.user.id,
         customerName: customerName.trim(),
@@ -122,8 +120,8 @@ export const orderController = {
         customerEmail: req.user.email,
         shippingAddress: shippingAddress.trim(),
         note: note ? note.trim() : '',
-        paymentMethod: paymentMethod as 'COD' | 'WALLET' | 'BANKING',
-        paymentStatus: paymentMethod === 'WALLET' ? 'PAID' : 'UNPAID',
+        paymentMethod: normalizedPaymentMethod,
+        paymentStatus: 'UNPAID',
         orderStatus: 'PENDING',
         items: verifiedItems,
         subtotal: calculatedSubtotal,
@@ -262,10 +260,18 @@ export const orderController = {
       }
     }
 
+    // Old wallet-paid orders are historical records only. Do not simulate a refund into a disabled wallet.
+    if (order.paymentMethod === 'WALLET' && order.paymentStatus === 'PAID') {
+      return res.status(409).json({
+        success: false,
+        message: 'Đơn hàng cũ đã thanh toán bằng ví điện tử đã ngừng hỗ trợ. Vui lòng kiểm tra và xử lý hoàn tiền thủ công trước khi hủy đơn.',
+      });
+    }
+
     const cancelled = dataStore.updateOrderStatus(
       id,
       'CANCELLED',
-      order.paymentMethod === 'WALLET' ? 'REFUNDED' : 'UNPAID',
+      'UNPAID',
       reason || 'Khách hàng yêu cầu hủy đơn'
     );
 

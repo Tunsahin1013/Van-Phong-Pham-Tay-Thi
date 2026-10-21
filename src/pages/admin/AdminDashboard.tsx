@@ -904,7 +904,6 @@ export const AdminDashboard: React.FC = () => {
                       <th>Email</th>
                       <th>Vai trò (Role)</th>
                       <th>Số điện thoại</th>
-                      <th>Số dư ví</th>
                       <th>Điểm tích lũy</th>
                       <th>Trạng thái</th>
                     </tr>
@@ -932,7 +931,6 @@ export const AdminDashboard: React.FC = () => {
                             </span>
                           </td>
                           <td>{u.phone || 'Chưa cập nhật'}</td>
-                          <td><strong>{i18n.currency(u.walletBalance || 0)}</strong></td>
                           <td style={{ color: '#d97706', fontWeight: 700 }}>{u.loyaltyPoints || 0}</td>
                           <td>
                             <span style={{ color: '#059669', fontWeight: 600, fontSize: 12 }}>✓ Hoạt động</span>

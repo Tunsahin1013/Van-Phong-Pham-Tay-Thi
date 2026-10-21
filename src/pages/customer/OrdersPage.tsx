@@ -390,7 +390,7 @@ export const OrdersPage: React.FC = () => {
             </div>
             <div className="modal-body">
               <p style={{ fontSize: 14, color: '#202124', marginBottom: 16 }}>
-                Bạn có chắc chắn muốn hủy đơn hàng <strong>{showCancelModal.orderCode}</strong> không? Sau khi hủy, tiền đã thanh toán bằng ví sẽ được hoàn lại tự động.
+                Bạn có chắc chắn muốn hủy đơn hàng <strong>{showCancelModal.orderCode}</strong> không? Trạng thái đơn hàng và việc xử lý thanh toán sẽ được cập nhật theo chính sách hiện hành.
               </p>
               <div className="form-group">
                 <label className="form-label">Lý do hủy đơn</label>
