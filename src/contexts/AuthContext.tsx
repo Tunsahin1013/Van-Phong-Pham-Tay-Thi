@@ -11,7 +11,6 @@ export interface User {
   address?: string;
   status: 'ACTIVE' | 'INACTIVE';
   loyaltyPoints: number;
-  walletBalance: number;
   avatar?: string;
   createdAt: string;
 }

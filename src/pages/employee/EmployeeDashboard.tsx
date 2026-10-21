@@ -159,16 +159,16 @@ export const EmployeeDashboard: React.FC = () => {
           <span style={{ fontSize: 13, fontWeight: 700, color: '#059669', textTransform: 'uppercase' }}>
             KHÔNG GIAN LÀM VIỆC NHÂN VIÊN
           </span>
-          <h1 style={{ fontSize: 26, fontWeight: 800, color: '#0f172a' }}>
+          <h1 style={{ fontSize: 26, fontWeight: 800, color: '#101010' }}>
             Bàn Điều Phối & Xử Lý Đơn Hàng
           </h1>
-          <p style={{ fontSize: 14, color: '#64748b' }}>
+          <p style={{ fontSize: 14, color: '#5f5e5e' }}>
             Xin chào <strong>{currentUser?.name}</strong>! Hôm nay có <strong>{pendingOrders.length} đơn hàng mới</strong> cần xác nhận.
           </p>
         </div>
 
         {/* Workspace tabs */}
-        <div style={{ display: 'flex', gap: 8, backgroundColor: '#e2e8f0', padding: 4, borderRadius: 10 }}>
+        <div style={{ display: 'flex', gap: 8, backgroundColor: '#E2E3E1', padding: 4, borderRadius: 10 }}>
           <button
             onClick={() => setActiveTab('orders')}
             style={{
@@ -176,7 +176,7 @@ export const EmployeeDashboard: React.FC = () => {
               borderRadius: 8,
               border: 'none',
               backgroundColor: activeTab === 'orders' ? '#ffffff' : 'transparent',
-              color: activeTab === 'orders' ? '#0f172a' : '#64748b',
+              color: activeTab === 'orders' ? '#101010' : '#5f5e5e',
               fontWeight: 700,
               fontSize: 13,
               cursor: 'pointer',
@@ -192,7 +192,7 @@ export const EmployeeDashboard: React.FC = () => {
               borderRadius: 8,
               border: 'none',
               backgroundColor: activeTab === 'inventory' ? '#ffffff' : 'transparent',
-              color: activeTab === 'inventory' ? '#0f172a' : '#64748b',
+              color: activeTab === 'inventory' ? '#101010' : '#5f5e5e',
               fontWeight: 700,
               fontSize: 13,
               cursor: 'pointer',
@@ -208,7 +208,7 @@ export const EmployeeDashboard: React.FC = () => {
               borderRadius: 8,
               border: 'none',
               backgroundColor: activeTab === 'chat' ? '#ffffff' : 'transparent',
-              color: activeTab === 'chat' ? '#0f172a' : '#64748b',
+              color: activeTab === 'chat' ? '#101010' : '#5f5e5e',
               fontWeight: 700,
               fontSize: 13,
               cursor: 'pointer',
@@ -222,42 +222,42 @@ export const EmployeeDashboard: React.FC = () => {
 
       {/* 4 Metric Summary Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 28 }}>
-        <div style={{ backgroundColor: '#ffffff', borderRadius: 12, padding: 18, border: '1px solid #e2e8f0', boxShadow: 'var(--shadow-sm)' }}>
+        <div style={{ backgroundColor: '#ffffff', borderRadius: 12, padding: 18, border: '1px solid #E2E3E1', boxShadow: 'var(--shadow-sm)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: 13, color: '#f59e0b', fontWeight: 700 }}>ĐƠN CHỜ DUYỆT</span>
             <Clock size={20} color="#f59e0b" />
           </div>
-          <div style={{ fontSize: 28, fontWeight: 900, color: '#0f172a', marginTop: 4 }}>
+          <div style={{ fontSize: 28, fontWeight: 900, color: '#101010', marginTop: 4 }}>
             {pendingOrders.length}
           </div>
         </div>
 
-        <div style={{ backgroundColor: '#ffffff', borderRadius: 12, padding: 18, border: '1px solid #e2e8f0', boxShadow: 'var(--shadow-sm)' }}>
+        <div style={{ backgroundColor: '#ffffff', borderRadius: 12, padding: 18, border: '1px solid #E2E3E1', boxShadow: 'var(--shadow-sm)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 13, color: '#2563eb', fontWeight: 700 }}>ĐANG ĐÓNG GÓI</span>
-            <Package size={20} color="#2563eb" />
+            <span style={{ fontSize: 13, color: '#F21D2F', fontWeight: 700 }}>ĐANG ĐÓNG GÓI</span>
+            <Package size={20} color="#F21D2F" />
           </div>
-          <div style={{ fontSize: 28, fontWeight: 900, color: '#0f172a', marginTop: 4 }}>
+          <div style={{ fontSize: 28, fontWeight: 900, color: '#101010', marginTop: 4 }}>
             {preparingOrders.length}
           </div>
         </div>
 
-        <div style={{ backgroundColor: '#ffffff', borderRadius: 12, padding: 18, border: '1px solid #e2e8f0', boxShadow: 'var(--shadow-sm)' }}>
+        <div style={{ backgroundColor: '#ffffff', borderRadius: 12, padding: 18, border: '1px solid #E2E3E1', boxShadow: 'var(--shadow-sm)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: 13, color: '#7c3aed', fontWeight: 700 }}>ĐANG VẬN CHUYỂN</span>
             <Truck size={20} color="#7c3aed" />
           </div>
-          <div style={{ fontSize: 28, fontWeight: 900, color: '#0f172a', marginTop: 4 }}>
+          <div style={{ fontSize: 28, fontWeight: 900, color: '#101010', marginTop: 4 }}>
             {shippingOrders.length}
           </div>
         </div>
 
-        <div style={{ backgroundColor: '#ffffff', borderRadius: 12, padding: 18, border: '1px solid #e2e8f0', boxShadow: 'var(--shadow-sm)' }}>
+        <div style={{ backgroundColor: '#ffffff', borderRadius: 12, padding: 18, border: '1px solid #E2E3E1', boxShadow: 'var(--shadow-sm)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: 13, color: '#dc2626', fontWeight: 700 }}>KHO SẮP HẾT HÀNG</span>
-            <AlertTriangle size={20} color="#dc2626" />
+            <span style={{ fontSize: 13, color: '#D90D24', fontWeight: 700 }}>KHO SẮP HẾT HÀNG</span>
+            <AlertTriangle size={20} color="#D90D24" />
           </div>
-          <div style={{ fontSize: 28, fontWeight: 900, color: '#0f172a', marginTop: 4 }}>
+          <div style={{ fontSize: 28, fontWeight: 900, color: '#101010', marginTop: 4 }}>
             {lowStockProducts.length}
           </div>
         </div>
@@ -265,7 +265,7 @@ export const EmployeeDashboard: React.FC = () => {
 
       {/* Tab 1: Orders Management */}
       {activeTab === 'orders' && (
-        <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #e2e8f0', padding: 24 }}>
+        <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #E2E3E1', padding: 24 }}>
           {/* Filters & Search */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
             <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
@@ -277,7 +277,7 @@ export const EmployeeDashboard: React.FC = () => {
                 style={{
                   padding: '8px 14px',
                   borderRadius: 8,
-                  border: '1px solid #cbd5e1',
+                  border: '1px solid #E7E8EA',
                   fontSize: 13,
                   width: 240,
                   outline: 'none',
@@ -289,7 +289,7 @@ export const EmployeeDashboard: React.FC = () => {
                 style={{
                   padding: '8px 12px',
                   borderRadius: 8,
-                  border: '1px solid #cbd5e1',
+                  border: '1px solid #E7E8EA',
                   fontSize: 13,
                   outline: 'none',
                   fontWeight: 600,
@@ -304,7 +304,7 @@ export const EmployeeDashboard: React.FC = () => {
                 <option value="CANCELLED">Đã hủy</option>
               </select>
             </div>
-            <span style={{ fontSize: 13, color: '#64748b' }}>
+            <span style={{ fontSize: 13, color: '#5f5e5e' }}>
               Hiển thị {filteredOrders.length} đơn hàng
             </span>
           </div>
@@ -327,19 +327,19 @@ export const EmployeeDashboard: React.FC = () => {
                 {filteredOrders.map((ord) => {
                   const statusConf = i18n.orderStatus[ord.orderStatus as keyof typeof i18n.orderStatus] || {
                     label: ord.orderStatus,
-                    color: '#64748b',
-                    bg: '#f1f5f9',
+                    color: '#5f5e5e',
+                    bg: '#EEEEEC',
                   };
                   return (
                     <tr key={ord.id}>
                       <td>
                         <strong>{ord.orderCode}</strong>
-                        <div style={{ fontSize: 11, color: '#94a3b8' }}>{i18n.formatDate(ord.createdAt)}</div>
+                        <div style={{ fontSize: 11, color: '#777B80' }}>{i18n.formatDate(ord.createdAt)}</div>
                       </td>
                       <td>{ord.customerName}</td>
                       <td>{ord.customerPhone}</td>
                       <td>
-                        <strong style={{ color: '#dc2626' }}>{i18n.currency(ord.total)}</strong>
+                        <strong style={{ color: '#D90D24' }}>{i18n.currency(ord.total)}</strong>
                       </td>
                       <td>
                         <span
@@ -376,8 +376,8 @@ export const EmployeeDashboard: React.FC = () => {
                             style={{
                               padding: '6px 10px',
                               borderRadius: 6,
-                              border: '1px solid #cbd5e1',
-                              background: '#f8fafc',
+                              border: '1px solid #E7E8EA',
+                              background: '#F5F5F3',
                               cursor: 'pointer',
                               fontSize: 12,
                               fontWeight: 600,
@@ -401,11 +401,11 @@ export const EmployeeDashboard: React.FC = () => {
 
       {/* Tab 2: Inventory & Products View */}
       {activeTab === 'inventory' && (
-        <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #e2e8f0', padding: 24 }}>
+        <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #E2E3E1', padding: 24 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
             <div>
-              <h3 style={{ fontSize: 18, fontWeight: 700, color: '#0f172a' }}>Danh Sách Tồn Kho & Sản Phẩm</h3>
-              <p style={{ fontSize: 13, color: '#64748b' }}>Nhân viên có thể kiểm tra tồn kho và nhập hàng bổ sung khi lượng tồn giảm xuống thấp.</p>
+              <h3 style={{ fontSize: 18, fontWeight: 700, color: '#101010' }}>Danh Sách Tồn Kho & Sản Phẩm</h3>
+              <p style={{ fontSize: 13, color: '#5f5e5e' }}>Nhân viên có thể kiểm tra tồn kho và nhập hàng bổ sung khi lượng tồn giảm xuống thấp.</p>
             </div>
           </div>
 
@@ -431,8 +431,8 @@ export const EmployeeDashboard: React.FC = () => {
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                           <img src={p.image} alt={p.name} style={{ width: 40, height: 40, borderRadius: 6, objectFit: 'cover' }} />
                           <div>
-                            <div style={{ fontWeight: 600, color: '#1e293b' }}>{p.name}</div>
-                            <div style={{ fontSize: 11, color: '#64748b' }}>Thương hiệu: {p.brand}</div>
+                            <div style={{ fontWeight: 600, color: '#101010' }}>{p.name}</div>
+                            <div style={{ fontSize: 11, color: '#5f5e5e' }}>Thương hiệu: {p.brand}</div>
                           </div>
                         </div>
                       </td>
@@ -445,8 +445,8 @@ export const EmployeeDashboard: React.FC = () => {
                             fontWeight: 700,
                             padding: '3px 8px',
                             borderRadius: 6,
-                            backgroundColor: isLow ? '#fee2e2' : '#d1fae5',
-                            color: isLow ? '#dc2626' : '#059669',
+                            backgroundColor: isLow ? '#FFE5E8' : '#d1fae5',
+                            color: isLow ? '#D90D24' : '#059669',
                           }}
                         >
                           {p.stock} {p.unit} {isLow && '⚠️ Sắp hết'}
@@ -461,7 +461,7 @@ export const EmployeeDashboard: React.FC = () => {
                             borderRadius: 6,
                             backgroundColor: 'var(--primary-light)',
                             color: 'var(--primary)',
-                            border: '1px solid #bfdbfe',
+                            border: '1px solid #FFE5E8',
                             fontSize: 12,
                             fontWeight: 600,
                             cursor: 'pointer',
@@ -488,7 +488,7 @@ export const EmployeeDashboard: React.FC = () => {
           style={{
             backgroundColor: '#ffffff',
             borderRadius: 16,
-            border: '1px solid #e2e8f0',
+            border: '1px solid #E2E3E1',
             display: 'grid',
             gridTemplateColumns: '320px 1fr',
             height: 540,
@@ -496,8 +496,8 @@ export const EmployeeDashboard: React.FC = () => {
           }}
         >
           {/* Conversation List */}
-          <div style={{ borderRight: '1px solid #e2e8f0', overflowY: 'auto' }}>
-            <div style={{ padding: '16px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, fontSize: 15 }}>
+          <div style={{ borderRight: '1px solid #E2E3E1', overflowY: 'auto' }}>
+            <div style={{ padding: '16px', borderBottom: '1px solid #E2E3E1', fontWeight: 700, fontSize: 15 }}>
               Hội Thoại Khách Hàng ({conversations.length})
             </div>
             {conversations.map((c) => (
@@ -509,18 +509,18 @@ export const EmployeeDashboard: React.FC = () => {
                 }}
                 style={{
                   padding: '14px 16px',
-                  borderBottom: '1px solid #f1f5f9',
-                  backgroundColor: activeChat?.id === c.id ? '#f1f5f9' : '#ffffff',
+                  borderBottom: '1px solid #EEEEEC',
+                  backgroundColor: activeChat?.id === c.id ? '#EEEEEC' : '#ffffff',
                   cursor: 'pointer',
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                   <span style={{ fontWeight: 700, fontSize: 14 }}>{c.customerName}</span>
-                  <span style={{ fontSize: 11, color: '#94a3b8' }}>
+                  <span style={{ fontSize: 11, color: '#777B80' }}>
                     {new Date(c.lastMessageAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
-                <div style={{ fontSize: 12, color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: 12, color: '#5f5e5e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {c.lastMessage}
                 </div>
               </div>
@@ -530,7 +530,7 @@ export const EmployeeDashboard: React.FC = () => {
           {/* Active Chat Conversation Body */}
           {activeChat ? (
             <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-              <div style={{ padding: '14px 20px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ padding: '14px 20px', borderBottom: '1px solid #E2E3E1', display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ width: 34, height: 34, borderRadius: '50%', backgroundColor: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
                   {activeChat.customerName.charAt(0)}
                 </div>
@@ -541,7 +541,7 @@ export const EmployeeDashboard: React.FC = () => {
               </div>
 
               {/* Chat Message List */}
-              <div style={{ flex: 1, padding: 20, overflowY: 'auto', backgroundColor: '#f8fafc', display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ flex: 1, padding: 20, overflowY: 'auto', backgroundColor: '#F5F5F3', display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {chatMessages.map((m) => {
                   const isStaff = m.senderRole !== 'CUSTOMER';
                   return (
@@ -560,14 +560,14 @@ export const EmployeeDashboard: React.FC = () => {
                           padding: '10px 14px',
                           borderRadius: isStaff ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
                           backgroundColor: isStaff ? '#059669' : '#ffffff',
-                          color: isStaff ? '#ffffff' : '#1e293b',
-                          border: isStaff ? 'none' : '1px solid #e2e8f0',
+                          color: isStaff ? '#ffffff' : '#101010',
+                          border: isStaff ? 'none' : '1px solid #E2E3E1',
                           fontSize: 13,
                         }}
                       >
                         {m.message}
                       </div>
-                      <span style={{ fontSize: 10, color: '#94a3b8', marginTop: 4 }}>
+                      <span style={{ fontSize: 10, color: '#777B80', marginTop: 4 }}>
                         {m.senderName} • {new Date(m.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
@@ -576,13 +576,13 @@ export const EmployeeDashboard: React.FC = () => {
               </div>
 
               {/* Send Form */}
-              <form onSubmit={handleSendChatMessage} style={{ padding: 14, borderTop: '1px solid #e2e8f0', display: 'flex', gap: 10 }}>
+              <form onSubmit={handleSendChatMessage} style={{ padding: 14, borderTop: '1px solid #E2E3E1', display: 'flex', gap: 10 }}>
                 <input
                   type="text"
                   placeholder="Nhập câu trả lời cho khách hàng..."
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
-                  style={{ flex: 1, padding: '10px 14px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 13, outline: 'none' }}
+                  style={{ flex: 1, padding: '10px 14px', borderRadius: 8, border: '1px solid #E7E8EA', fontSize: 13, outline: 'none' }}
                 />
                 <button type="submit" className="btn-primary" style={{ padding: '0 18px' }}>
                   <Send size={16} /> Gửi
@@ -590,7 +590,7 @@ export const EmployeeDashboard: React.FC = () => {
               </form>
             </div>
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#777B80' }}>
               Chọn một cuộc trò chuyện để bắt đầu hỗ trợ
             </div>
           )}
@@ -606,14 +606,14 @@ export const EmployeeDashboard: React.FC = () => {
               <button className="modal-close-btn" onClick={() => setSelectedOrder(null)}>✕</button>
             </div>
             <div className="modal-body">
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, backgroundColor: '#f8fafc', padding: 16, borderRadius: 10, marginBottom: 20 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, backgroundColor: '#F5F5F3', padding: 16, borderRadius: 10, marginBottom: 20 }}>
                 <div>
-                  <div style={{ fontSize: 12, color: '#64748b' }}>Khách hàng</div>
+                  <div style={{ fontSize: 12, color: '#5f5e5e' }}>Khách hàng</div>
                   <div style={{ fontWeight: 700 }}>{selectedOrder.customerName}</div>
                   <div style={{ fontSize: 13 }}>{selectedOrder.customerPhone}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 12, color: '#64748b' }}>Địa chỉ giao hàng</div>
+                  <div style={{ fontSize: 12, color: '#5f5e5e' }}>Địa chỉ giao hàng</div>
                   <div style={{ fontSize: 13, fontWeight: 500 }}>{selectedOrder.shippingAddress}</div>
                 </div>
               </div>
@@ -621,7 +621,7 @@ export const EmployeeDashboard: React.FC = () => {
               <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 10 }}>Sản phẩm cần chuẩn bị đóng gói:</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
                 {selectedOrder.items.map((i: any, idx: number) => (
-                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, paddingBottom: 8, borderBottom: '1px solid #f1f5f9' }}>
+                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, paddingBottom: 8, borderBottom: '1px solid #EEEEEC' }}>
                     <span>{i.name} (x{i.quantity} {i.unit})</span>
                     <strong>{i18n.currency(i.price * i.quantity)}</strong>
                   </div>
@@ -629,13 +629,13 @@ export const EmployeeDashboard: React.FC = () => {
               </div>
 
               {/* Status transition action buttons */}
-              <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: 20 }}>
+              <div style={{ borderTop: '1px solid #E2E3E1', paddingTop: 20 }}>
                 <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 12 }}>Chuyển đổi trạng thái xử lý:</div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
                   <button
                     onClick={() => handleUpdateOrderStatus(selectedOrder.id, 'CONFIRMED')}
                     disabled={selectedOrder.orderStatus !== 'PENDING'}
-                    style={{ padding: '8px 14px', borderRadius: 8, border: 'none', backgroundColor: '#3b82f6', color: '#ffffff', fontWeight: 600, fontSize: 13, cursor: 'pointer', opacity: selectedOrder.orderStatus === 'PENDING' ? 1 : 0.4 }}
+                    style={{ padding: '8px 14px', borderRadius: 8, border: 'none', backgroundColor: '#D90D24', color: '#ffffff', fontWeight: 600, fontSize: 13, cursor: 'pointer', opacity: selectedOrder.orderStatus === 'PENDING' ? 1 : 0.4 }}
                   >
                     1. Xác Nhận Đơn
                   </button>
@@ -651,7 +651,7 @@ export const EmployeeDashboard: React.FC = () => {
                   <button
                     onClick={() => handleUpdateOrderStatus(selectedOrder.id, 'SHIPPING')}
                     disabled={selectedOrder.orderStatus !== 'PREPARING'}
-                    style={{ padding: '8px 14px', borderRadius: 8, border: 'none', backgroundColor: '#0284c7', color: '#ffffff', fontWeight: 600, fontSize: 13, cursor: 'pointer', opacity: selectedOrder.orderStatus === 'PREPARING' ? 1 : 0.4 }}
+                    style={{ padding: '8px 14px', borderRadius: 8, border: 'none', backgroundColor: '#777B80', color: '#ffffff', fontWeight: 600, fontSize: 13, cursor: 'pointer', opacity: selectedOrder.orderStatus === 'PREPARING' ? 1 : 0.4 }}
                   >
                     3. Giao Cho Shipper
                   </button>
@@ -667,7 +667,7 @@ export const EmployeeDashboard: React.FC = () => {
                   <button
                     onClick={() => handleUpdateOrderStatus(selectedOrder.id, 'CANCELLED')}
                     disabled={selectedOrder.orderStatus === 'COMPLETED' || selectedOrder.orderStatus === 'CANCELLED'}
-                    style={{ padding: '8px 14px', borderRadius: 8, border: 'none', backgroundColor: '#ef4444', color: '#ffffff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
+                    style={{ padding: '8px 14px', borderRadius: 8, border: 'none', backgroundColor: '#F21D2F', color: '#ffffff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
                   >
                     Hủy Đơn Hàng
                   </button>
@@ -689,7 +689,7 @@ export const EmployeeDashboard: React.FC = () => {
             <div className="modal-body">
               <div style={{ marginBottom: 16 }}>
                 <div style={{ fontWeight: 700, fontSize: 14 }}>{showStockInModal.name}</div>
-                <div style={{ fontSize: 12, color: '#64748b' }}>
+                <div style={{ fontSize: 12, color: '#5f5e5e' }}>
                   Mã SKU: {showStockInModal.code} | Tồn hiện tại: {showStockInModal.stock} {showStockInModal.unit}
                 </div>
               </div>

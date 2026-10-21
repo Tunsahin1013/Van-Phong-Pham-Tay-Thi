@@ -105,7 +105,7 @@ export const ChatWidget: React.FC = () => {
               width: 56,
               height: 56,
               borderRadius: '50%',
-              backgroundColor: '#2563eb',
+              backgroundColor: '#F21D2F',
               color: '#ffffff',
               border: 'none',
               boxShadow: '0 8px 24px rgba(37, 99, 235, 0.4)',
@@ -134,7 +134,7 @@ export const ChatWidget: React.FC = () => {
             backgroundColor: '#ffffff',
             borderRadius: 16,
             boxShadow: '0 12px 32px rgba(0,0,0,0.18)',
-            border: '1px solid #e2e8f0',
+            border: '1px solid #E2E3E1',
             zIndex: 995,
             display: 'flex',
             flexDirection: 'column',
@@ -145,7 +145,7 @@ export const ChatWidget: React.FC = () => {
           <div
             style={{
               padding: '14px 18px',
-              backgroundColor: '#1e293b',
+              backgroundColor: '#101010',
               color: '#ffffff',
               display: 'flex',
               alignItems: 'center',
@@ -158,7 +158,7 @@ export const ChatWidget: React.FC = () => {
                   width: 34,
                   height: 34,
                   borderRadius: '50%',
-                  backgroundColor: '#3b82f6',
+                  backgroundColor: '#D90D24',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -168,12 +168,12 @@ export const ChatWidget: React.FC = () => {
               </div>
               <div>
                 <div style={{ fontWeight: 700, fontSize: 14 }}>Hỗ Trợ Stationery Shop</div>
-                <div style={{ fontSize: 11, color: '#94a3b8' }}>Trực tuyến (24/7)</div>
+                <div style={{ fontSize: 11, color: '#777B80' }}>Trực tuyến (24/7)</div>
               </div>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}
+              style={{ background: 'none', border: 'none', color: '#777B80', cursor: 'pointer' }}
             >
               <X size={18} />
             </button>
@@ -185,7 +185,7 @@ export const ChatWidget: React.FC = () => {
               flex: 1,
               padding: 16,
               overflowY: 'auto',
-              backgroundColor: '#f8fafc',
+              backgroundColor: '#F5F5F3',
               display: 'flex',
               flexDirection: 'column',
               gap: 12,
@@ -198,9 +198,9 @@ export const ChatWidget: React.FC = () => {
                 padding: '10px 14px',
                 borderRadius: '12px 12px 12px 2px',
                 backgroundColor: '#ffffff',
-                border: '1px solid #e2e8f0',
+                border: '1px solid #E2E3E1',
                 fontSize: 13,
-                color: '#334155',
+                color: '#202124',
                 lineHeight: 1.4,
               }}
             >
@@ -224,16 +224,16 @@ export const ChatWidget: React.FC = () => {
                     style={{
                       padding: '10px 14px',
                       borderRadius: isMe ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
-                      backgroundColor: isMe ? '#2563eb' : '#ffffff',
-                      color: isMe ? '#ffffff' : '#334155',
-                      border: isMe ? 'none' : '1px solid #e2e8f0',
+                      backgroundColor: isMe ? '#F21D2F' : '#ffffff',
+                      color: isMe ? '#ffffff' : '#202124',
+                      border: isMe ? 'none' : '1px solid #E2E3E1',
                       fontSize: 13,
                       lineHeight: 1.4,
                     }}
                   >
                     {m.message}
                   </div>
-                  <span style={{ fontSize: 10, color: '#94a3b8', marginTop: 4 }}>
+                  <span style={{ fontSize: 10, color: '#777B80', marginTop: 4 }}>
                     {i18n.formatDate(m.createdAt)}
                   </span>
                 </div>
@@ -247,7 +247,7 @@ export const ChatWidget: React.FC = () => {
             onSubmit={handleSendMessage}
             style={{
               padding: 12,
-              borderTop: '1px solid #e2e8f0',
+              borderTop: '1px solid #E2E3E1',
               backgroundColor: '#ffffff',
               display: 'flex',
               gap: 8,
@@ -263,7 +263,7 @@ export const ChatWidget: React.FC = () => {
                 flex: 1,
                 padding: '8px 12px',
                 borderRadius: 8,
-                border: '1px solid #cbd5e1',
+                border: '1px solid #E7E8EA',
                 fontSize: 13,
                 outline: 'none',
               }}
@@ -275,7 +275,7 @@ export const ChatWidget: React.FC = () => {
                 width: 38,
                 height: 38,
                 borderRadius: 8,
-                backgroundColor: '#2563eb',
+                backgroundColor: '#F21D2F',
                 color: '#ffffff',
                 border: 'none',
                 display: 'flex',

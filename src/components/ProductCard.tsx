@@ -49,7 +49,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               borderRadius: 6,
               fontSize: 11,
               fontWeight: 700,
-              backgroundColor: '#334155',
+              backgroundColor: '#202124',
               color: '#ffffff',
               zIndex: 2,
             }}
@@ -62,7 +62,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       <div className="product-card-body">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span className="product-card-brand">{product.brand}</span>
-          <span style={{ fontSize: 11, color: '#94a3b8' }}>Kho: {product.stock} {product.unit}</span>
+          <span style={{ fontSize: 11, color: '#777B80' }}>Kho: {product.stock} {product.unit}</span>
         </div>
 
         <Link to={`/products/${product.id}`} className="product-card-title" title={product.name}>
@@ -71,10 +71,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
         <div className="product-card-rating">
           <Star size={14} fill="#f59e0b" color="#f59e0b" />
-          <span style={{ fontWeight: 700, color: '#1e293b' }}>{product.rating || 5.0}</span>
-          <span style={{ color: '#94a3b8', fontSize: 11 }}>({product.reviewCount || 0})</span>
+          <span style={{ fontWeight: 700, color: '#101010' }}>{product.rating || 5.0}</span>
+          <span style={{ color: '#777B80', fontSize: 11 }}>({product.reviewCount || 0})</span>
           {product.sold ? (
-            <span style={{ color: '#64748b', fontSize: 11, marginLeft: 'auto' }}>
+            <span style={{ color: '#5f5e5e', fontSize: 11, marginLeft: 'auto' }}>
               Đã bán {product.sold}
             </span>
           ) : null}

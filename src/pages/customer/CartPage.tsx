@@ -53,10 +53,10 @@ export const CartPage: React.FC = () => {
         >
           <ShoppingBag size={40} />
         </div>
-        <h2 style={{ fontSize: 24, fontWeight: 800, color: '#0f172a', marginBottom: 8 }}>
+        <h2 style={{ fontSize: 24, fontWeight: 800, color: '#101010', marginBottom: 8 }}>
           Giỏ hàng của bạn đang trống
         </h2>
-        <p style={{ color: '#64748b', fontSize: 15, marginBottom: 28 }}>
+        <p style={{ color: '#5f5e5e', fontSize: 15, marginBottom: 28 }}>
           Khám phá ngay các dụng cụ học tập, bút viết và sổ tay chính hãng giá tốt!
         </p>
         <Link to="/products" className="btn-primary">
@@ -68,18 +68,18 @@ export const CartPage: React.FC = () => {
 
   return (
     <div className="container" style={{ padding: '32px 20px 60px' }}>
-      <h1 style={{ fontSize: 24, fontWeight: 800, color: '#0f172a', marginBottom: 24 }}>
+      <h1 style={{ fontSize: 24, fontWeight: 800, color: '#101010', marginBottom: 24 }}>
         Giỏ Hàng Của Bạn ({items.length} mặt hàng)
       </h1>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1.8fr 1fr', gap: 32, alignItems: 'start' }}>
         {/* Left: Cart Items Table */}
-        <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #e2e8f0', padding: 24 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 16, borderBottom: '1px solid #e2e8f0' }}>
+        <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #E2E3E1', padding: 24 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 16, borderBottom: '1px solid #E2E3E1' }}>
             <span style={{ fontWeight: 700, fontSize: 15 }}>Sản phẩm</span>
             <button
               onClick={clearCart}
-              style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+              style={{ background: 'none', border: 'none', color: '#F21D2F', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
             >
               Xóa toàn bộ giỏ hàng
             </button>
@@ -95,11 +95,11 @@ export const CartPage: React.FC = () => {
                   gap: 16,
                   alignItems: 'center',
                   paddingBottom: 20,
-                  borderBottom: '1px solid #f1f5f9',
+                  borderBottom: '1px solid #EEEEEC',
                 }}
               >
                 {/* Thumbnail */}
-                <div style={{ width: 80, height: 80, borderRadius: 8, overflow: 'hidden', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0' }}>
+                <div style={{ width: 80, height: 80, borderRadius: 8, overflow: 'hidden', backgroundColor: '#F5F5F3', border: '1px solid #E2E3E1' }}>
                   <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
 
@@ -107,23 +107,23 @@ export const CartPage: React.FC = () => {
                 <div>
                   <Link
                     to={`/products/${item.productId}`}
-                    style={{ fontWeight: 700, fontSize: 14, color: '#0f172a', lineHeight: 1.4, display: 'block', marginBottom: 4 }}
+                    style={{ fontWeight: 700, fontSize: 14, color: '#101010', lineHeight: 1.4, display: 'block', marginBottom: 4 }}
                   >
                     {item.name}
                   </Link>
-                  <div style={{ fontSize: 12, color: '#64748b' }}>
+                  <div style={{ fontSize: 12, color: '#5f5e5e' }}>
                     Mã SP: {item.code} | Đơn vị: {item.unit}
                   </div>
-                  <div style={{ fontSize: 14, fontWeight: 800, color: '#dc2626', marginTop: 4 }}>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: '#D90D24', marginTop: 4 }}>
                     {i18n.currency(item.price)}
                   </div>
                 </div>
 
                 {/* Quantity Controls */}
-                <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #cbd5e1', borderRadius: 6, overflow: 'hidden' }}>
+                <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #E7E8EA', borderRadius: 6, overflow: 'hidden' }}>
                   <button
                     onClick={() => updateQuantity(item.productId, item.quantity - 1)}
-                    style={{ width: 28, height: 32, background: '#f8fafc', border: 'none', cursor: 'pointer', fontWeight: 700 }}
+                    style={{ width: 28, height: 32, background: '#F5F5F3', border: 'none', cursor: 'pointer', fontWeight: 700 }}
                   >
                     -
                   </button>
@@ -132,7 +132,7 @@ export const CartPage: React.FC = () => {
                   </span>
                   <button
                     onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                    style={{ width: 28, height: 32, background: '#f8fafc', border: 'none', cursor: 'pointer', fontWeight: 700 }}
+                    style={{ width: 28, height: 32, background: '#F5F5F3', border: 'none', cursor: 'pointer', fontWeight: 700 }}
                   >
                     +
                   </button>
@@ -141,7 +141,7 @@ export const CartPage: React.FC = () => {
                 {/* Remove button */}
                 <button
                   onClick={() => removeFromCart(item.productId)}
-                  style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 6 }}
+                  style={{ background: 'none', border: 'none', color: '#777B80', cursor: 'pointer', padding: 6 }}
                   title="Xóa sản phẩm"
                 >
                   <Trash2 size={18} />
@@ -160,7 +160,7 @@ export const CartPage: React.FC = () => {
         {/* Right: Order Summary & Voucher */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
           {/* Coupon Box */}
-          <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #e2e8f0', padding: 20 }}>
+          <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #E2E3E1', padding: 20 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700, fontSize: 14, marginBottom: 12 }}>
               <Tag size={16} color="var(--primary)" />
               <span>Mã Giảm Giá / Voucher</span>
@@ -184,7 +184,7 @@ export const CartPage: React.FC = () => {
                 </div>
                 <button
                   onClick={removeVoucher}
-                  style={{ background: 'none', border: 'none', color: '#dc2626', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}
+                  style={{ background: 'none', border: 'none', color: '#D90D24', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}
                 >
                   Gỡ bỏ
                 </button>
@@ -200,7 +200,7 @@ export const CartPage: React.FC = () => {
                     flex: 1,
                     padding: '8px 12px',
                     borderRadius: 8,
-                    border: '1px solid #cbd5e1',
+                    border: '1px solid #E7E8EA',
                     fontSize: 13,
                     outline: 'none',
                   }}
@@ -218,12 +218,12 @@ export const CartPage: React.FC = () => {
           </div>
 
           {/* Checkout Breakdown */}
-          <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #e2e8f0', padding: 24 }}>
+          <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #E2E3E1', padding: 24 }}>
             <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Chi Tiết Đơn Hàng</h3>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 14, paddingBottom: 16, borderBottom: '1px solid #e2e8f0' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 14, paddingBottom: 16, borderBottom: '1px solid #E2E3E1' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: '#64748b' }}>Tạm tính tiền hàng:</span>
+                <span style={{ color: '#5f5e5e' }}>Tạm tính tiền hàng:</span>
                 <span style={{ fontWeight: 600 }}>{i18n.currency(subtotal)}</span>
               </div>
               {discount > 0 && (
@@ -233,7 +233,7 @@ export const CartPage: React.FC = () => {
                 </div>
               )}
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: '#64748b' }}>Phí vận chuyển hỏa tốc:</span>
+                <span style={{ color: '#5f5e5e' }}>Phí vận chuyển hỏa tốc:</span>
                 <span style={{ fontWeight: 600 }}>
                   {shippingFee === 0 ? <strong style={{ color: '#059669' }}>Miễn phí (Freeship)</strong> : i18n.currency(shippingFee)}
                 </span>
@@ -247,7 +247,7 @@ export const CartPage: React.FC = () => {
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', paddingTop: 16, marginBottom: 24 }}>
               <span style={{ fontSize: 16, fontWeight: 700 }}>Tổng thanh toán:</span>
-              <span style={{ fontSize: 26, fontWeight: 900, color: '#dc2626' }}>
+              <span style={{ fontSize: 26, fontWeight: 900, color: '#D90D24' }}>
                 {i18n.currency(total)}
               </span>
             </div>
@@ -260,7 +260,7 @@ export const CartPage: React.FC = () => {
               Tiến Hành Đặt Hàng <ArrowRight size={18} />
             </button>
 
-            <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12, color: '#64748b' }}>
+            <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12, color: '#5f5e5e' }}>
               <ShieldCheck size={16} color="#059669" />
               <span>Bảo mật thanh toán & thông tin khách hàng</span>
             </div>

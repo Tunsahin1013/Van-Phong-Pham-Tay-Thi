@@ -54,7 +54,10 @@ export const HomePage: React.FC = () => {
   const [vouchers, setVouchers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [siteContent, setSiteContent] = useState<any>(null);
-  const slides = siteContent?.heroSlides?.length ? siteContent.heroSlides : bannerSlides;
+  // Use the local bannerSlides.ts as the source of truth for the homepage hero.
+  // Site content from the API still powers brand-independent content such as perks,
+  // but an older heroSlides array in MongoDB must not silently replace updated image URLs.
+  const slides = bannerSlides;
   const perks = siteContent?.perks?.length ? siteContent.perks : [
     { id: 'authentic', title: 'Chính Hãng 100%', description: 'Phân phối trực tiếp từ Thiên Long, Deli, Pentel', icon: 'Award' },
     { id: 'delivery', title: 'Giao Hỏa Tốc 2H', description: 'Miễn phí giao hàng nội thành đơn từ 300K', icon: 'Truck' },
@@ -105,16 +108,28 @@ export const HomePage: React.FC = () => {
   }, []);
 
   const slide = slides[currentSlide % slides.length];
+  const slideTitleText = String(slide?.title ?? 'VĂN PHÒNG PHẨM TÂY THI');
+  const slideTitleWords = slideTitleText.trim().split(/\s+/).filter(Boolean);
+  const splitTitleAt = Math.ceil(slideTitleWords.length / 2);
+  const titleMain = slide.accentTitle || slideTitleWords.length < 4
+    ? slideTitleText
+    : slideTitleWords.slice(0, splitTitleAt).join(' ');
+  const titleAccent = slide.accentTitle || (slideTitleWords.length >= 4
+    ? slideTitleWords.slice(splitTitleAt).join(' ')
+    : '');
 
   return (
     <div>
       {/* Hero Banner Slider */}
       <section className="hero-slider-section">
         <div className="container">
-          <div className="hero-slide-card" style={{ position: 'relative' }}>
+          <div className="hero-slide-card tt-hero-card" style={{ position: 'relative' }}>
             <div className="hero-slide-content">
-              <span className="hero-badge">{slide.badge}</span>
-              <h1 className="hero-title">{slide.title}</h1>
+              <span className="hero-badge"><span className="hero-badge-brand">TÂY THI</span><span className="hero-badge-divider" aria-hidden="true">/</span>{slide.badge}</span>
+              <h1 className="hero-title">
+                <span className="hero-title-main">{titleMain}</span>
+                {titleAccent && <span className="hero-title-accent">{titleAccent}</span>}
+              </h1>
               <h3 className="hero-subtitle">{slide.subtitle}</h3>
               <p className="hero-desc">{slide.description}</p>
               <div className="hero-cta-group">
@@ -128,18 +143,13 @@ export const HomePage: React.FC = () => {
             </div>
 
             <div className="hero-slide-image-box">
-              <img src={slide.image} alt={slide.title} />
-              <div
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  background: 'linear-gradient(to right, rgba(255,255,255,0.2), transparent)',
-                }}
-              />
+              <img src={slide.image} alt={`${slide.title}${slide.accentTitle ? ` ${slide.accentTitle}` : ''}`} />
+              <div className="hero-image-overlay" aria-hidden="true" />
             </div>
 
             {/* Slide Navigation Arrows */}
             <button
+              aria-label="Banner trước"
               onClick={() => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length)}
               style={{
                 position: 'absolute',
@@ -150,7 +160,7 @@ export const HomePage: React.FC = () => {
                 height: 40,
                 borderRadius: '50%',
                 backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                border: '1px solid #e2e8f0',
+                border: '1px solid #E2E3E1',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -163,6 +173,7 @@ export const HomePage: React.FC = () => {
             </button>
 
             <button
+              aria-label="Banner tiếp theo"
               onClick={() => setCurrentSlide((prev) => (prev + 1) % slides.length)}
               style={{
                 position: 'absolute',
@@ -173,7 +184,7 @@ export const HomePage: React.FC = () => {
                 height: 40,
                 borderRadius: '50%',
                 backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                border: '1px solid #e2e8f0',
+                border: '1px solid #E2E3E1',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -184,12 +195,25 @@ export const HomePage: React.FC = () => {
             >
               <ChevronRight size={20} />
             </button>
+
+            <div className="hero-pagination" aria-label="Chọn banner">
+              {slides.map((item: any, index: number) => (
+                <button
+                  key={item.id || index}
+                  type="button"
+                  className={`hero-pagination-dot ${index === currentSlide ? 'is-active' : ''}`}
+                  aria-label={`Chuyển tới banner ${index + 1}`}
+                  aria-current={index === currentSlide ? 'true' : undefined}
+                  onClick={() => setCurrentSlide(index)}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
       {/* Core perks loaded from MongoDB site content */}
-      <section className="container">
+      <section className="container tt-perks-wrap">
         <div className="perks-grid">
           {perks.map((perk: any) => {
             const PerkIcon = perkIconMap[perk.icon] || Award;
@@ -241,7 +265,7 @@ export const HomePage: React.FC = () => {
         <section className="container" style={{ marginBottom: 40 }}>
           <div
             style={{
-              background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+              background: 'linear-gradient(135deg, #101010 0%, #101010 100%)',
               borderRadius: 16,
               padding: '24px 28px',
               color: '#ffffff',
@@ -252,7 +276,7 @@ export const HomePage: React.FC = () => {
                 <Tag size={24} color="#f59e0b" />
                 <h3 style={{ fontSize: 18, fontWeight: 800 }}>Mã Ưu Đãi Dành Riêng Cho Bạn Hôm Nay</h3>
               </div>
-              <Link to="/vouchers" style={{ fontSize: 13, color: '#38bdf8', fontWeight: 600 }}>
+              <Link to="/vouchers" style={{ fontSize: 13, color: '#F21D2F', fontWeight: 600 }}>
                 Xem tất cả mã giảm giá →
               </Link>
             </div>
@@ -275,10 +299,10 @@ export const HomePage: React.FC = () => {
                     <div style={{ fontSize: 15, fontWeight: 800, color: '#fbbf24', letterSpacing: 0.5 }}>
                       {v.code}
                     </div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: '#f8fafc', marginTop: 4 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: '#F5F5F3', marginTop: 4 }}>
                       {v.name}
                     </div>
-                    <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>
+                    <div style={{ fontSize: 11, color: '#777B80', marginTop: 4 }}>
                       Đơn tối thiểu: {i18n.currency(v.minimumOrder)}
                     </div>
                   </div>
@@ -288,7 +312,7 @@ export const HomePage: React.FC = () => {
                       marginTop: 12,
                       padding: '6px 12px',
                       borderRadius: 6,
-                      backgroundColor: '#2563eb',
+                      backgroundColor: '#F21D2F',
                       color: '#ffffff',
                       border: 'none',
                       fontSize: 12,
@@ -310,7 +334,7 @@ export const HomePage: React.FC = () => {
       <section className="container" style={{ marginBottom: 40 }}>
         <div className="section-header">
           <h2 className="section-title">
-            <Flame size={22} color="#dc2626" /> Sản Phẩm Nổi Bật & Bán Chạy Nhất
+            <Flame size={22} color="#D90D24" /> Sản Phẩm Nổi Bật & Bán Chạy Nhất
           </h2>
           <Link to="/products?featured=true" style={{ fontSize: 14, fontWeight: 600, color: 'var(--primary)' }}>
             Xem thêm →
@@ -318,7 +342,7 @@ export const HomePage: React.FC = () => {
         </div>
 
         {loading ? (
-          <div style={{ padding: 40, textAlign: 'center', color: '#64748b' }}>Đang tải sản phẩm...</div>
+          <div style={{ padding: 40, textAlign: 'center', color: '#5f5e5e' }}>Đang tải sản phẩm...</div>
         ) : (
           <div className="products-grid">
             {featuredProducts.slice(0, 8).map((prod) => (
@@ -367,8 +391,8 @@ export const HomePage: React.FC = () => {
       {/* Top Brands Showcase */}
       <section className="container" style={{ marginBottom: 50 }}>
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <h3 style={{ fontSize: 20, fontWeight: 800, color: '#0f172a' }}>Đối Tác Thương Hiệu Chính Hãng</h3>
-          <p style={{ fontSize: 14, color: '#64748b' }}>Stationery Shop là đại lý ủy quyền của các thương hiệu văn phòng phẩm hàng đầu</p>
+          <h3 style={{ fontSize: 20, fontWeight: 800, color: '#101010' }}>Đối Tác Thương Hiệu Chính Hãng</h3>
+          <p style={{ fontSize: 14, color: '#5f5e5e' }}>Stationery Shop là đại lý ủy quyền của các thương hiệu văn phòng phẩm hàng đầu</p>
         </div>
         <div
           style={{
@@ -380,7 +404,7 @@ export const HomePage: React.FC = () => {
             padding: '24px 32px',
             backgroundColor: '#ffffff',
             borderRadius: 16,
-            border: '1px solid #e2e8f0',
+            border: '1px solid #E2E3E1',
           }}
         >
           {['Thiên Long', 'Double A', 'Deli', 'Campus', 'Pentel', 'Plus', 'Hồng Hà', 'Staedtler'].map((b) => (
@@ -390,11 +414,11 @@ export const HomePage: React.FC = () => {
               style={{
                 padding: '10px 20px',
                 borderRadius: 8,
-                backgroundColor: '#f8fafc',
-                border: '1px solid #e2e8f0',
+                backgroundColor: '#F5F5F3',
+                border: '1px solid #E2E3E1',
                 fontWeight: 700,
                 fontSize: 14,
-                color: '#334155',
+                color: '#202124',
                 cursor: 'pointer',
                 transition: 'all 0.2s',
               }}

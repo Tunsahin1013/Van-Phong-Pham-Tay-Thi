@@ -32,7 +32,6 @@ export const authController = {
         address: address || '',
         status: 'ACTIVE',
         loyaltyPoints: 0,
-        walletBalance: 0,
       });
 
       // Welcome notification
@@ -46,7 +45,7 @@ export const authController = {
 
       const token = generateToken(newUser);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password: _, ...userSafe } = newUser;
+      const { password: _, walletBalance: _legacyWalletBalance, ...userSafe } = newUser;
 
       return res.status(201).json({
         success: true,
@@ -84,7 +83,7 @@ export const authController = {
 
       const token = generateToken(user);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password: _, ...userSafe } = user;
+      const { password: _, walletBalance: _legacyWalletBalance, ...userSafe } = user;
 
       return res.json({
         success: true,
@@ -108,7 +107,7 @@ export const authController = {
       return res.status(401).json({ success: false, message: 'Chưa đăng nhập' });
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password: _, ...userSafe } = req.user;
+    const { password: _, walletBalance: _legacyWalletBalance, ...userSafe } = req.user;
     return res.json({ success: true, user: userSafe });
   },
 
@@ -186,7 +185,7 @@ export const authController = {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password: _, ...userSafe } = updated;
+    const { password: _, walletBalance: _legacyWalletBalance, ...userSafe } = updated;
     return res.json({ success: true, message: 'Cập nhật thông tin thành công', user: userSafe });
   },
 };

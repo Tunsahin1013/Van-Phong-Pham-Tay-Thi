@@ -20,11 +20,11 @@ export const i18n = {
   },
   orderStatus: {
     PENDING: { label: 'Chờ xác nhận', color: '#f59e0b', bg: '#fef3c7' },
-    CONFIRMED: { label: 'Đã xác nhận', color: '#3b82f6', bg: '#dbeafe' },
+    CONFIRMED: { label: 'Đã xác nhận', color: '#D90D24', bg: '#FFE5E8' },
     PREPARING: { label: 'Đang đóng gói', color: '#8b5cf6', bg: '#ede9fe' },
-    SHIPPING: { label: 'Đang giao hàng', color: '#0284c7', bg: '#e0f2fe' },
+    SHIPPING: { label: 'Đang giao hàng', color: '#777B80', bg: '#E7E8EA' },
     COMPLETED: { label: 'Giao thành công', color: '#10b981', bg: '#d1fae5' },
-    CANCELLED: { label: 'Đã hủy đơn', color: '#ef4444', bg: '#fee2e2' },
+    CANCELLED: { label: 'Đã hủy đơn', color: '#F21D2F', bg: '#FFE5E8' },
   },
   paymentStatus: {
     UNPAID: { label: 'Chưa thanh toán', color: '#f59e0b', bg: '#fef3c7' },
@@ -33,7 +33,7 @@ export const i18n = {
   },
   paymentMethods: {
     COD: 'Thanh toán tiền mặt khi nhận hàng (COD)',
-    WALLET: 'Thanh toán bằng ví Stationery Pay',
+    WALLET: 'Phương thức thanh toán cũ (đã ngừng hỗ trợ)',
     BANKING: 'Chuyển khoản QR Ngân hàng 24/7',
   },
   roles: {

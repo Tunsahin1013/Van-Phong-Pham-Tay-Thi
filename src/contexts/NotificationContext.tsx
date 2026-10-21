@@ -7,7 +7,7 @@ export interface NotificationItem {
   userId: string;
   title: string;
   message: string;
-  type: 'ORDER' | 'VOUCHER' | 'SYSTEM' | 'WALLET';
+  type: 'ORDER' | 'VOUCHER' | 'SYSTEM';
   isRead: boolean;
   link?: string;
   createdAt: string;

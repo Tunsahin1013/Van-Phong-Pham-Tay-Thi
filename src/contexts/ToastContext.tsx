@@ -40,13 +40,13 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           let bgColor = '#10b981';
           let Icon = CheckCircle2;
           if (toast.type === 'error') {
-            bgColor = '#ef4444';
+            bgColor = '#F21D2F';
             Icon = AlertCircle;
           } else if (toast.type === 'warning') {
             bgColor = '#f59e0b';
             Icon = AlertTriangle;
           } else if (toast.type === 'info') {
-            bgColor = '#3b82f6';
+            bgColor = '#D90D24';
             Icon = Info;
           }
 
@@ -69,7 +69,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               <div style={{ color: bgColor, flexShrink: 0 }}>
                 <Icon size={20} />
               </div>
-              <div style={{ flex: 1, fontSize: 14, color: '#1e293b', fontWeight: 500, lineHeight: 1.4 }}>
+              <div style={{ flex: 1, fontSize: 14, color: '#101010', fontWeight: 500, lineHeight: 1.4 }}>
                 {toast.message}
               </div>
               <button
@@ -77,7 +77,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 style={{
                   background: 'none',
                   border: 'none',
-                  color: '#94a3b8',
+                  color: '#777B80',
                   cursor: 'pointer',
                   padding: 4,
                   display: 'flex',

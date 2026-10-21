@@ -68,7 +68,7 @@ export const OrdersPage: React.FC = () => {
     return (
       <div className="container" style={{ padding: '80px 20px', textAlign: 'center' }}>
         <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 12 }}>Vui lòng đăng nhập</h2>
-        <p style={{ color: '#64748b', marginBottom: 20 }}>Bạn cần đăng nhập tài khoản để theo dõi đơn hàng đã mua.</p>
+        <p style={{ color: '#5f5e5e', marginBottom: 20 }}>Bạn cần đăng nhập tài khoản để theo dõi đơn hàng đã mua.</p>
         <Link to="/" className="btn-primary">Về Trang Chủ</Link>
       </div>
     );
@@ -105,7 +105,7 @@ export const OrdersPage: React.FC = () => {
         </div>
       )}
 
-      <h1 style={{ fontSize: 24, fontWeight: 800, color: '#0f172a', marginBottom: 20 }}>
+      <h1 style={{ fontSize: 24, fontWeight: 800, color: '#101010', marginBottom: 20 }}>
         Lịch Sử Đơn Hàng Của Tôi
       </h1>
 
@@ -114,7 +114,7 @@ export const OrdersPage: React.FC = () => {
         style={{
           display: 'flex',
           gap: 10,
-          borderBottom: '1px solid #e2e8f0',
+          borderBottom: '1px solid #E2E3E1',
           marginBottom: 24,
           overflowX: 'auto',
           paddingBottom: 4,
@@ -139,7 +139,7 @@ export const OrdersPage: React.FC = () => {
               cursor: 'pointer',
               fontWeight: 700,
               fontSize: 14,
-              color: activeTab === tab.key ? 'var(--primary)' : '#64748b',
+              color: activeTab === tab.key ? 'var(--primary)' : '#5f5e5e',
               borderBottom: activeTab === tab.key ? '3px solid var(--primary)' : '3px solid transparent',
               whiteSpace: 'nowrap',
             }}
@@ -151,12 +151,12 @@ export const OrdersPage: React.FC = () => {
 
       {/* Orders List */}
       {loading ? (
-        <div style={{ padding: 60, textAlign: 'center', color: '#64748b' }}>Đang tải danh sách đơn hàng...</div>
+        <div style={{ padding: 60, textAlign: 'center', color: '#5f5e5e' }}>Đang tải danh sách đơn hàng...</div>
       ) : filteredOrders.length === 0 ? (
-        <div style={{ padding: 60, textAlign: 'center', backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #e2e8f0' }}>
-          <Package size={44} color="#94a3b8" style={{ margin: '0 auto 12px' }} />
-          <h3 style={{ fontSize: 18, fontWeight: 700, color: '#1e293b', marginBottom: 6 }}>Chưa có đơn hàng nào</h3>
-          <p style={{ color: '#64748b', fontSize: 14, marginBottom: 20 }}>Bạn chưa có đơn hàng nào ở trạng thái này.</p>
+        <div style={{ padding: 60, textAlign: 'center', backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #E2E3E1' }}>
+          <Package size={44} color="#777B80" style={{ margin: '0 auto 12px' }} />
+          <h3 style={{ fontSize: 18, fontWeight: 700, color: '#101010', marginBottom: 6 }}>Chưa có đơn hàng nào</h3>
+          <p style={{ color: '#5f5e5e', fontSize: 14, marginBottom: 20 }}>Bạn chưa có đơn hàng nào ở trạng thái này.</p>
           <Link to="/products" className="btn-primary">Đặt Mua Ngay</Link>
         </div>
       ) : (
@@ -164,8 +164,8 @@ export const OrdersPage: React.FC = () => {
           {filteredOrders.map((order) => {
             const statusConfig = i18n.orderStatus[order.orderStatus as keyof typeof i18n.orderStatus] || {
               label: order.orderStatus,
-              color: '#64748b',
-              bg: '#f1f5f9',
+              color: '#5f5e5e',
+              bg: '#EEEEEC',
             };
 
             return (
@@ -174,7 +174,7 @@ export const OrdersPage: React.FC = () => {
                 style={{
                   backgroundColor: '#ffffff',
                   borderRadius: 16,
-                  border: '1px solid #e2e8f0',
+                  border: '1px solid #E2E3E1',
                   padding: 24,
                   boxShadow: 'var(--shadow-sm)',
                 }}
@@ -186,15 +186,15 @@ export const OrdersPage: React.FC = () => {
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     paddingBottom: 16,
-                    borderBottom: '1px solid #f1f5f9',
+                    borderBottom: '1px solid #EEEEEC',
                     marginBottom: 16,
                     flexWrap: 'wrap',
                     gap: 12,
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <span style={{ fontSize: 16, fontWeight: 800, color: '#0f172a' }}>{order.orderCode}</span>
-                    <span style={{ fontSize: 13, color: '#64748b' }}>Ngày đặt: {i18n.formatDate(order.createdAt)}</span>
+                    <span style={{ fontSize: 16, fontWeight: 800, color: '#101010' }}>{order.orderCode}</span>
+                    <span style={{ fontSize: 13, color: '#5f5e5e' }}>Ngày đặt: {i18n.formatDate(order.createdAt)}</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <span
@@ -231,13 +231,13 @@ export const OrdersPage: React.FC = () => {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         <img src={it.image} alt={it.name} style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover' }} />
                         <div>
-                          <div style={{ fontWeight: 600, color: '#1e293b' }}>{it.name}</div>
-                          <div style={{ fontSize: 12, color: '#64748b' }}>
+                          <div style={{ fontWeight: 600, color: '#101010' }}>{it.name}</div>
+                          <div style={{ fontSize: 12, color: '#5f5e5e' }}>
                             Số lượng: {it.quantity} {it.unit} x {i18n.currency(it.price)}
                           </div>
                         </div>
                       </div>
-                      <span style={{ fontWeight: 700, color: '#0f172a' }}>{i18n.currency(it.price * it.quantity)}</span>
+                      <span style={{ fontWeight: 700, color: '#101010' }}>{i18n.currency(it.price * it.quantity)}</span>
                     </div>
                   ))}
                 </div>
@@ -249,14 +249,14 @@ export const OrdersPage: React.FC = () => {
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     paddingTop: 16,
-                    borderTop: '1px solid #f1f5f9',
+                    borderTop: '1px solid #EEEEEC',
                     flexWrap: 'wrap',
                     gap: 12,
                   }}
                 >
                   <div>
-                    <span style={{ fontSize: 13, color: '#64748b' }}>Phương thức: </span>
-                    <strong style={{ fontSize: 13, color: '#334155' }}>{order.paymentMethod}</strong>
+                    <span style={{ fontSize: 13, color: '#5f5e5e' }}>Phương thức: </span>
+                    <strong style={{ fontSize: 13, color: '#202124' }}>{order.paymentMethod}</strong>
                     {order.voucherCode && (
                       <span style={{ marginLeft: 12, fontSize: 12, color: '#059669', fontWeight: 600 }}>
                         Voucher: {order.voucherCode} (-{i18n.currency(order.discount)})
@@ -266,8 +266,8 @@ export const OrdersPage: React.FC = () => {
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                     <div>
-                      <span style={{ fontSize: 13, color: '#64748b' }}>Tổng tiền: </span>
-                      <strong style={{ fontSize: 20, color: '#dc2626' }}>{i18n.currency(order.total)}</strong>
+                      <span style={{ fontSize: 13, color: '#5f5e5e' }}>Tổng tiền: </span>
+                      <strong style={{ fontSize: 20, color: '#D90D24' }}>{i18n.currency(order.total)}</strong>
                     </div>
 
                     <button
@@ -275,7 +275,7 @@ export const OrdersPage: React.FC = () => {
                       style={{
                         padding: '8px 14px',
                         borderRadius: 8,
-                        border: '1px solid #cbd5e1',
+                        border: '1px solid #E7E8EA',
                         backgroundColor: '#ffffff',
                         fontSize: 13,
                         fontWeight: 600,
@@ -295,8 +295,8 @@ export const OrdersPage: React.FC = () => {
                           padding: '8px 14px',
                           borderRadius: 8,
                           border: '1px solid #fca5a5',
-                          backgroundColor: '#fef2f2',
-                          color: '#ef4444',
+                          backgroundColor: '#FFE5E8',
+                          color: '#F21D2F',
                           fontSize: 13,
                           fontWeight: 600,
                           cursor: 'pointer',
@@ -326,9 +326,9 @@ export const OrdersPage: React.FC = () => {
             </div>
 
             <div className="modal-body">
-              <div style={{ backgroundColor: '#f8fafc', padding: 16, borderRadius: 10, marginBottom: 20 }}>
+              <div style={{ backgroundColor: '#F5F5F3', padding: 16, borderRadius: 10, marginBottom: 20 }}>
                 <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 8 }}>Thông tin người nhận</div>
-                <div style={{ fontSize: 13, color: '#334155', lineHeight: 1.6 }}>
+                <div style={{ fontSize: 13, color: '#202124', lineHeight: 1.6 }}>
                   <div>Họ tên: <strong>{selectedOrder.customerName}</strong></div>
                   <div>Số điện thoại: <strong>{selectedOrder.customerPhone}</strong></div>
                   <div>Địa chỉ giao: <strong>{selectedOrder.shippingAddress}</strong></div>
@@ -339,17 +339,17 @@ export const OrdersPage: React.FC = () => {
               <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 12 }}>Danh sách sản phẩm</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
                 {selectedOrder.items.map((i: any, idx: number) => (
-                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, paddingBottom: 8, borderBottom: '1px solid #f1f5f9' }}>
+                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, paddingBottom: 8, borderBottom: '1px solid #EEEEEC' }}>
                     <div>
                       <span style={{ fontWeight: 600 }}>{i.name}</span>
-                      <div style={{ fontSize: 11, color: '#64748b' }}>x {i.quantity} {i.unit}</div>
+                      <div style={{ fontSize: 11, color: '#5f5e5e' }}>x {i.quantity} {i.unit}</div>
                     </div>
                     <strong>{i18n.currency(i.price * i.quantity)}</strong>
                   </div>
                 ))}
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 13, borderTop: '1px solid #e2e8f0', paddingTop: 14 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 13, borderTop: '1px solid #E2E3E1', paddingTop: 14 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Tạm tính tiền hàng:</span>
                   <span>{i18n.currency(selectedOrder.subtotal)}</span>
@@ -366,7 +366,7 @@ export const OrdersPage: React.FC = () => {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16, fontWeight: 800, marginTop: 4 }}>
                   <span>Tổng tiền thanh toán:</span>
-                  <span style={{ color: '#dc2626' }}>{i18n.currency(selectedOrder.total)}</span>
+                  <span style={{ color: '#D90D24' }}>{i18n.currency(selectedOrder.total)}</span>
                 </div>
               </div>
             </div>
@@ -385,12 +385,12 @@ export const OrdersPage: React.FC = () => {
         <div className="modal-overlay" onClick={() => setShowCancelModal(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 440 }}>
             <div className="modal-header">
-              <h3 className="modal-title" style={{ color: '#dc2626' }}>Xác Nhận Hủy Đơn Hàng</h3>
+              <h3 className="modal-title" style={{ color: '#D90D24' }}>Xác Nhận Hủy Đơn Hàng</h3>
               <button className="modal-close-btn" onClick={() => setShowCancelModal(null)}>✕</button>
             </div>
             <div className="modal-body">
-              <p style={{ fontSize: 14, color: '#334155', marginBottom: 16 }}>
-                Bạn có chắc chắn muốn hủy đơn hàng <strong>{showCancelModal.orderCode}</strong> không? Sau khi hủy, tiền đã thanh toán bằng ví sẽ được hoàn lại tự động.
+              <p style={{ fontSize: 14, color: '#202124', marginBottom: 16 }}>
+                Bạn có chắc chắn muốn hủy đơn hàng <strong>{showCancelModal.orderCode}</strong> không? Trạng thái đơn hàng và việc xử lý thanh toán sẽ được cập nhật theo chính sách hiện hành.
               </p>
               <div className="form-group">
                 <label className="form-label">Lý do hủy đơn</label>
@@ -410,7 +410,7 @@ export const OrdersPage: React.FC = () => {
               <button
                 className="btn-primary"
                 onClick={handleCancelOrder}
-                style={{ backgroundColor: '#dc2626' }}
+                style={{ backgroundColor: '#D90D24' }}
               >
                 Xác Nhận Hủy Đơn
               </button>
