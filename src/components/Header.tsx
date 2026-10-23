@@ -16,7 +16,8 @@ import { useAuth } from '../contexts/AuthContext.tsx';
 import { useCart } from '../contexts/CartContext.tsx';
 import { useNotification } from '../contexts/NotificationContext.tsx';
 import { i18n } from '../i18n.ts';
-import { categoriesAPI, siteContentAPI } from '../api.ts';
+import { categoriesAPI, siteContentAPI, systemAPI, StoreSettingsData } from '../api.ts';
+import '../systemAdmin.css';
 
 interface HeaderProps {
   onOpenAuthModal?: () => void;
@@ -27,6 +28,18 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAuthModal }) => {
   const { currentUser, role, logout } = useAuth();
   const { itemCount } = useCart();
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotification();
+
+  const [storeSettings, setStoreSettings] = useState<StoreSettingsData>({
+    storeName: 'Văn phòng phẩm Tây Thi', logoUrl: '', hotline: '1900 6868',
+    address: '10 Ngõ 226 Cầu Giấy, Nghĩa Đô, Cầu Giấy, Hà Nội', email: 'lienhe@stationery.vn',
+  });
+  useEffect(() => {
+    let active = true;
+    systemAPI.getPublicSettings()
+      .then((res) => { if (active && res.success && res.data) setStoreSettings(previous => ({ ...previous, ...res.data })); })
+      .catch(() => { /* Keep local defaults when public settings are unavailable. */ });
+    return () => { active = false; };
+  }, []);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -65,7 +78,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAuthModal }) => {
         <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span>{siteContent?.announcementText || '🎉 Miễn phí vận chuyển cho đơn hàng từ 300.000đ | Giao hỏa tốc 2H tại TP.HCM & Hà Nội'}</span>
           <div>
-            <span>{siteContent?.hotlineLabel || 'Hotline hỗ trợ doanh nghiệp'}: <strong>{siteContent?.hotline || '1900 6868'}</strong></span>
+            <span>{siteContent?.hotlineLabel || 'Hotline hỗ trợ doanh nghiệp'}: <strong>{storeSettings.hotline || siteContent?.hotline || '1900 6868'}</strong></span>
           </div>
         </div>
       </div>
@@ -109,14 +122,14 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAuthModal }) => {
       <header className="main-header">
         <div className="container header-inner">
           {/* Logo */}
-          <Link to="/" className="logo-brand" aria-label="Tây Thi - Trang chủ">
-            <div className="logo-icon-box" aria-hidden="true">
-              <Layers size={25} strokeWidth={2.5} />
-            </div>
+          <Link to="/" className="logo-brand" aria-label={`${storeSettings.storeName || 'Văn phòng phẩm Tây Thi'} - Trang chủ`}>
+            {storeSettings.logoUrl ? (
+              <img className="store-logo-image" src={storeSettings.logoUrl} alt={storeSettings.storeName || 'Logo Tây Thi'} />
+            ) : (
+              <div className="logo-icon-box" aria-hidden="true"><Layers size={25} strokeWidth={2.5} /></div>
+            )}
             <div className="logo-copy">
-              <span className="logo-wordmark" aria-label="Tây Thi">
-                Tây <span className="logo-wordmark-accent">Thi</span>
-              </span>
+              <span className="logo-wordmark">{storeSettings.storeName || 'Văn phòng phẩm Tây Thi'}</span>
               <span className="logo-tagline">VĂN PHÒNG PHẨM</span>
             </div>
           </Link>

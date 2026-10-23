@@ -24,6 +24,7 @@ import {
   ArrowUpRight,
   Shield,
   Layers,
+  Settings,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -55,6 +56,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext.tsx';
 import { useToast } from '../../contexts/ToastContext.tsx';
 import { i18n } from '../../i18n.ts';
+import { SystemManagementPanel } from './SystemManagementPanel.tsx';
 
 type AdminTab =
   | 'dashboard'
@@ -67,7 +69,8 @@ type AdminTab =
   | 'users'
   | 'reviews'
   | 'reports'
-  | 'notifications';
+  | 'notifications'
+  | 'system';
 
 export const AdminDashboard: React.FC = () => {
   const { currentUser } = useAuth();
@@ -75,6 +78,7 @@ export const AdminDashboard: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
   const [loading, setLoading] = useState(true);
+  const [revenueGranularity, setRevenueGranularity] = useState<'daily' | 'monthly' | 'yearly'>('monthly');
 
   // Data states
   const [dashboardData, setDashboardData] = useState<any>(null);
@@ -86,6 +90,8 @@ export const AdminDashboard: React.FC = () => {
   const [vouchers, setVouchers] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
+  const [reviewReplyDrafts, setReviewReplyDrafts] = useState<Record<string, string>>({});
+  const [savingReviewReplyId, setSavingReviewReplyId] = useState<string | null>(null);
 
   // Search & Filter
   const [filterSearch, setFilterSearch] = useState('');
@@ -141,7 +147,10 @@ export const AdminDashboard: React.FC = () => {
       if (supRes.success) setSuppliers(supRes.data);
       if (vouchRes.success) setVouchers(vouchRes.data);
       if (usrRes.success) setUsers(usrRes.data);
-      if (revRes.success) setReviews(revRes.data);
+      if (revRes.success) {
+        setReviews(revRes.data);
+        setReviewReplyDrafts(Object.fromEntries(revRes.data.map((review: any) => [review.id, review.adminReply || ''])));
+      }
     } catch (err) {
       console.error('Failed to load admin data', err);
     } finally {
@@ -218,6 +227,48 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
+  const handleSaveReviewReply = async (reviewId: string) => {
+    const reply = (reviewReplyDrafts[reviewId] || '').trim();
+    if (!reply) {
+      showToast('Vui lòng nhập nội dung phản hồi', 'warning');
+      return;
+    }
+    if (reply.length > 2000) {
+      showToast('Phản hồi không được vượt quá 2.000 ký tự', 'warning');
+      return;
+    }
+    setSavingReviewReplyId(reviewId);
+    try {
+      const res = await reviewsAPI.replyToReview(reviewId, reply);
+      if (res.success && res.data) {
+        setReviews((previous) => previous.map((review) => review.id === reviewId ? res.data : review));
+        setReviewReplyDrafts((previous) => ({ ...previous, [reviewId]: res.data.adminReply || reply }));
+        showToast('Đã lưu phản hồi của cửa hàng', 'success');
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Không thể lưu phản hồi', 'error');
+    } finally {
+      setSavingReviewReplyId(null);
+    }
+  };
+
+  const handleDeleteReviewReply = async (reviewId: string) => {
+    if (!confirm('Bạn có chắc muốn xóa phản hồi của cửa hàng cho đánh giá này?')) return;
+    setSavingReviewReplyId(reviewId);
+    try {
+      const res = await reviewsAPI.deleteReviewReply(reviewId);
+      if (res.success && res.data) {
+        setReviews((previous) => previous.map((review) => review.id === reviewId ? res.data : review));
+        setReviewReplyDrafts((previous) => ({ ...previous, [reviewId]: '' }));
+        showToast('Đã xóa phản hồi của cửa hàng', 'success');
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Không thể xóa phản hồi', 'error');
+    } finally {
+      setSavingReviewReplyId(null);
+    }
+  };
+
   // Handlers for Broadcast Notification
   const handleBroadcast = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -249,7 +300,24 @@ export const AdminDashboard: React.FC = () => {
     lowStockCount: 0,
   };
 
+  const dailyRevData = dashboardData?.dailyRevenue || [];
   const monthlyRevData = dashboardData?.monthlyRevenue || [];
+  const yearlyRevData = dashboardData?.yearlyRevenue || [];
+  const revenueChartData = revenueGranularity === 'daily'
+    ? dailyRevData
+    : revenueGranularity === 'yearly'
+      ? yearlyRevData
+      : monthlyRevData;
+  const revenueChartTitle = revenueGranularity === 'daily'
+    ? 'Biểu Đồ Doanh Thu Theo Ngày (VND)'
+    : revenueGranularity === 'yearly'
+      ? 'Biểu Đồ Doanh Thu Theo Năm (VND)'
+      : 'Biểu Đồ Doanh Thu Theo Tháng (VND)';
+  const revenueChartHint = revenueGranularity === 'daily'
+    ? '30 ngày gần nhất'
+    : revenueGranularity === 'yearly'
+      ? '6 năm gần nhất'
+      : '12 tháng gần nhất';
   const statusPieData = dashboardData?.orderStatusBreakdown || [];
   const categoryStats = dashboardData?.categoryStats || [];
 
@@ -345,6 +413,13 @@ export const AdminDashboard: React.FC = () => {
           >
             <Bell size={18} /> Phát Thông Báo
           </button>
+          <button
+            className={`admin-nav-item ${activeTab === 'system' ? 'active' : ''}`}
+            onClick={() => setActiveTab('system')}
+            style={{ width: '100%', border: 'none', background: 'none', textAlign: 'left' }}
+          >
+            <Settings size={18} /> Quản Trị Hệ Thống & Dữ Liệu
+          </button>
         </nav>
       </aside>
 
@@ -366,6 +441,7 @@ export const AdminDashboard: React.FC = () => {
               {activeTab === 'reviews' && 'Kiểm Duyệt Nhận Xét Của Khách Hàng'}
               {activeTab === 'reports' && 'Báo Cáo Hoạt Động & Doanh Thu'}
               {activeTab === 'notifications' && 'Hệ Thống Thông Báo Nội Bộ & Khách Hàng'}
+              {activeTab === 'system' && 'Quản Trị Hệ Thống & Dữ Liệu'}
             </h2>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -377,6 +453,7 @@ export const AdminDashboard: React.FC = () => {
 
         {/* Content Area */}
         <main className="admin-content">
+          {activeTab === 'system' && <SystemManagementPanel />}
           {/* TAB 1: DASHBOARD & RECHARTS */}
           {activeTab === 'dashboard' && (
             <div>
@@ -425,12 +502,42 @@ export const AdminDashboard: React.FC = () => {
 
               {/* Recharts Analytics Charts */}
               <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: 24, marginBottom: 28 }}>
-                {/* Revenue Trend Area Chart */}
+                {/* Revenue Trend Area Chart: daily / monthly / yearly */}
                 <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #E2E3E1', padding: 24, boxShadow: 'var(--shadow-sm)' }}>
-                  <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Biểu Đồ Doanh Thu Theo Tháng (VND)</h3>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 14 }}>
+                    <div>
+                      <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0 }}>{revenueChartTitle}</h3>
+                      <div style={{ fontSize: 12, color: '#777B80', marginTop: 5 }}>{revenueChartHint} · Đơn hoàn thành, chưa hoàn tiền</div>
+                    </div>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 9, fontSize: 12, fontWeight: 700, color: '#555555', whiteSpace: 'nowrap' }}>
+                      <span>Kỳ thống kê</span>
+                      <select
+                        aria-label="Chọn kỳ xem doanh thu"
+                        value={revenueGranularity}
+                        onChange={(event) => setRevenueGranularity(event.target.value as 'daily' | 'monthly' | 'yearly')}
+                        style={{
+                          minWidth: 150,
+                          appearance: 'auto',
+                          border: '1px solid #D1D5DB',
+                          borderRadius: 8,
+                          padding: '10px 34px 10px 12px',
+                          backgroundColor: '#FFFFFF',
+                          color: '#101010',
+                          fontSize: 13,
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          outlineColor: '#F21D2F',
+                        }}
+                      >
+                        <option value="daily">Theo ngày</option>
+                        <option value="monthly">Theo tháng</option>
+                        <option value="yearly">Theo năm</option>
+                      </select>
+                    </label>
+                  </div>
                   <div style={{ height: 280 }}>
                     <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={monthlyRevData}>
+                      <AreaChart data={revenueChartData}>
                         <defs>
                           <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="5%" stopColor="#F21D2F" stopOpacity={0.8}/>
@@ -438,9 +545,21 @@ export const AdminDashboard: React.FC = () => {
                           </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke="#EEEEEC" />
-                        <XAxis dataKey="month" stroke="#777B80" fontSize={12} />
-                        <YAxis stroke="#777B80" fontSize={12} tickFormatter={(v) => `${v / 1000000}M`} />
-                        <Tooltip formatter={(value: any) => [i18n.currency(value), 'Doanh thu']} />
+                        <XAxis
+                          dataKey="label"
+                          stroke="#777B80"
+                          fontSize={12}
+                          interval={revenueGranularity === 'daily' ? 4 : 0}
+                          minTickGap={revenueGranularity === 'daily' ? 6 : 0}
+                        />
+                        <YAxis
+                          stroke="#777B80"
+                          fontSize={12}
+                          tickFormatter={(value: number) => value >= 1000000
+                            ? `${Number((value / 1000000).toFixed(1))}M`
+                            : value >= 1000 ? `${Math.round(value / 1000)}K` : String(value)}
+                        />
+                        <Tooltip formatter={(value: any) => [i18n.currency(Number(value) || 0), 'Doanh thu']} />
                         <Area type="monotone" dataKey="revenue" stroke="#F21D2F" fillOpacity={1} fill="url(#colorRev)" />
                       </AreaChart>
                     </ResponsiveContainer>
@@ -959,6 +1078,7 @@ export const AdminDashboard: React.FC = () => {
                       <th>Nội dung nhận xét</th>
                       <th>Thời gian</th>
                       <th>Trạng thái</th>
+                      <th>Phản hồi của cửa hàng</th>
                       <th>Thao tác</th>
                     </tr>
                   </thead>
@@ -983,6 +1103,39 @@ export const AdminDashboard: React.FC = () => {
                           >
                             {r.status === 'APPROVED' ? 'Hiển thị' : 'Đã ẩn'}
                           </span>
+                        </td>
+                        <td style={{ minWidth: 280, maxWidth: 360 }}>
+                          {r.adminReply && (
+                            <div style={{ padding: 8, marginBottom: 8, borderLeft: '3px solid #D90D24', background: '#F8F8F8', borderRadius: '0 6px 6px 0' }}>
+                              <div style={{ fontSize: 11, fontWeight: 800, color: '#D90D24', marginBottom: 4 }}>Phản hồi hiện tại{r.adminReplyBy ? ` · ${r.adminReplyBy}` : ''}</div>
+                              <div style={{ fontSize: 12, whiteSpace: 'pre-wrap', lineHeight: 1.5 }}>{r.adminReply}</div>
+                              {r.adminReplyAt && <div style={{ fontSize: 10, color: '#777B80', marginTop: 4 }}>{i18n.formatDate(r.adminReplyAt)}</div>}
+                            </div>
+                          )}
+                          {currentUser?.role === 'ADMIN' ? (
+                            <>
+                              <textarea
+                                value={reviewReplyDrafts[r.id] ?? ''}
+                                onChange={(e) => setReviewReplyDrafts((previous) => ({ ...previous, [r.id]: e.target.value }))}
+                                rows={3}
+                                maxLength={2000}
+                                placeholder="Nhập phản hồi chính thức của cửa hàng..."
+                                aria-label={`Phản hồi đánh giá của ${r.customerName}`}
+                                style={{ width: '100%', minWidth: 240, resize: 'vertical', boxSizing: 'border-box', border: '1px solid #D1D5DB', borderRadius: 6, padding: 8, fontSize: 12 }}
+                              />
+                              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
+                                <button
+                                  onClick={() => handleSaveReviewReply(r.id)}
+                                  disabled={savingReviewReplyId === r.id || !(reviewReplyDrafts[r.id] || '').trim()}
+                                  style={{ padding: '6px 9px', borderRadius: 6, border: 0, background: '#D90D24', color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer', opacity: savingReviewReplyId === r.id ? 0.6 : 1 }}
+                                >
+                                  {savingReviewReplyId === r.id ? 'Đang lưu...' : r.adminReply ? 'Cập nhật phản hồi' : 'Gửi phản hồi'}
+                                </button>
+                                {r.adminReply && <button onClick={() => handleDeleteReviewReply(r.id)} disabled={savingReviewReplyId === r.id} style={{ padding: '6px 9px', borderRadius: 6, border: '1px solid #E7E8EA', background: '#fff', color: '#B91C1C', fontSize: 11, cursor: 'pointer' }}>Xóa phản hồi</button>}
+                              </div>
+                              <div style={{ fontSize: 10, color: '#777B80', marginTop: 4 }}>{(reviewReplyDrafts[r.id] || '').length}/2000 ký tự</div>
+                            </>
+                          ) : (!r.adminReply ? <span style={{ color: '#777B80', fontSize: 12 }}>Chưa có phản hồi</span> : null)}
                         </td>
                         <td>
                           <button

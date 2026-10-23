@@ -16,6 +16,41 @@ import {
   ChatMessageItem,
 } from '../data/seedData.ts';
 
+export interface SystemLogEntry {
+  id: string;
+  actorId?: string;
+  actorName: string;
+  actorRole: string;
+  action: string;
+  method: string;
+  path: string;
+  statusCode: number;
+  ip?: string;
+  userAgent?: string;
+  details?: string;
+  createdAt: string;
+}
+
+export interface StoreSettings {
+  storeName: string;
+  logoUrl: string;
+  hotline: string;
+  address: string;
+  email: string;
+  updatedAt: string;
+  updatedBy: string;
+}
+
+export const DEFAULT_STORE_SETTINGS: StoreSettings = {
+  storeName: 'Văn phòng phẩm Tây Thi',
+  logoUrl: '',
+  hotline: '1900 6868',
+  address: '10 Ngõ 226 Cầu Giấy, Nghĩa Đô, Cầu Giấy, Hà Nội',
+  email: 'lienhe@stationery.vn',
+  updatedAt: '',
+  updatedBy: 'Hệ thống',
+};
+
 interface DatabaseSchema {
   users: UserItem[];
   categories: CategoryItem[];
@@ -29,6 +64,8 @@ interface DatabaseSchema {
   notifications: NotificationItem[];
   conversations: ChatConversationItem[];
   chatMessages: ChatMessageItem[];
+  systemLogs: SystemLogEntry[];
+  storeSettings: StoreSettings;
 }
 
 const DB_FILE_PATH = path.resolve(process.cwd(), 'data', 'db.json');
@@ -38,7 +75,7 @@ class DataStoreService {
   private isLoaded: boolean = false;
 
   constructor() {
-    this.db = getInitialSeedData();
+    this.db = { ...getInitialSeedData(), systemLogs: [], storeSettings: { ...DEFAULT_STORE_SETTINGS } };
     this.init();
   }
 
@@ -67,15 +104,20 @@ class DataStoreService {
           notifications: parsed.notifications?.length ? parsed.notifications : seed.notifications,
           conversations: parsed.conversations?.length ? parsed.conversations : seed.conversations,
           chatMessages: parsed.chatMessages?.length ? parsed.chatMessages : seed.chatMessages,
+          systemLogs: Array.isArray(parsed.systemLogs) ? parsed.systemLogs : [],
+          storeSettings: {
+            ...DEFAULT_STORE_SETTINGS,
+            ...(parsed.storeSettings && typeof parsed.storeSettings === 'object' ? parsed.storeSettings : {}),
+          },
         };
       } else {
-        this.db = getInitialSeedData();
+        this.db = { ...getInitialSeedData(), systemLogs: [], storeSettings: { ...DEFAULT_STORE_SETTINGS } };
         this.persist();
       }
       this.isLoaded = true;
     } catch (err) {
       console.error('Error initializing DataStore, using in-memory seed:', err);
-      this.db = getInitialSeedData();
+      this.db = { ...getInitialSeedData(), systemLogs: [], storeSettings: { ...DEFAULT_STORE_SETTINGS } };
     }
   }
 
@@ -581,41 +623,78 @@ class DataStoreService {
     return this.db.reviews;
   }
 
+  private recalculateProductRating(productId: string): void {
+    const product = this.getProductById(productId);
+    if (!product) return;
+
+    const approved = this.db.reviews.filter(r => r.productId === productId && r.status === 'APPROVED');
+    product.reviewCount = approved.length;
+    product.rating = approved.length
+      ? Number((approved.reduce((sum, review) => sum + review.rating, 0) / approved.length).toFixed(1))
+      : 0;
+  }
+
   createReview(review: Omit<ReviewItem, 'id' | 'createdAt'>): ReviewItem {
+    const now = new Date().toISOString();
     const newRev: ReviewItem = {
-      id: 'rev_' + Date.now(),
-      createdAt: new Date().toISOString(),
+      id: 'rev_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+      createdAt: now,
+      updatedAt: now,
       ...review,
     };
     this.db.reviews.unshift(newRev);
-
-    // Recalculate product rating
-    const prodReviews = this.db.reviews.filter(r => r.productId === review.productId && r.status === 'APPROVED');
-    const prod = this.getProductById(review.productId);
-    if (prod && prodReviews.length > 0) {
-      const sum = prodReviews.reduce((acc, curr) => acc + curr.rating, 0);
-      prod.rating = Number((sum / prodReviews.length).toFixed(1));
-      prod.reviewCount = prodReviews.length;
-    }
-
+    this.recalculateProductRating(review.productId);
     this.persist();
     return newRev;
+  }
+
+  updateReviewContent(id: string, rating: number, comment: string): ReviewItem | null {
+    const review = this.db.reviews.find(r => r.id === id);
+    if (!review) return null;
+    review.rating = rating;
+    review.comment = comment;
+    review.updatedAt = new Date().toISOString();
+    this.recalculateProductRating(review.productId);
+    this.persist();
+    return review;
+  }
+
+  updateReviewReply(id: string, reply: string, adminName: string): ReviewItem | null {
+    const review = this.db.reviews.find(r => r.id === id);
+    if (!review) return null;
+    review.adminReply = reply;
+    review.adminReplyAt = new Date().toISOString();
+    review.adminReplyBy = adminName;
+    this.persist();
+    return review;
+  }
+
+  deleteReviewReply(id: string): ReviewItem | null {
+    const review = this.db.reviews.find(r => r.id === id);
+    if (!review) return null;
+    delete review.adminReply;
+    delete review.adminReplyAt;
+    delete review.adminReplyBy;
+    this.persist();
+    return review;
   }
 
   updateReviewStatus(id: string, status: ReviewItem['status']): ReviewItem | null {
     const rev = this.db.reviews.find(r => r.id === id);
     if (!rev) return null;
     rev.status = status;
+    this.recalculateProductRating(rev.productId);
     this.persist();
     return rev;
   }
 
   deleteReview(id: string): boolean {
-    const before = this.db.reviews.length;
+    const review = this.db.reviews.find(r => r.id === id);
+    if (!review) return false;
     this.db.reviews = this.db.reviews.filter(r => r.id !== id);
-    const deleted = this.db.reviews.length < before;
-    if (deleted) this.persist();
-    return deleted;
+    this.recalculateProductRating(review.productId);
+    this.persist();
+    return true;
   }
 
 
@@ -781,6 +860,49 @@ class DataStoreService {
     return true;
   }
 
+  // --- SYSTEM ADMINISTRATION ---
+  getBackupSnapshot(): DatabaseSchema {
+    // Return detached data so a downloader cannot mutate the live in-memory store.
+    return JSON.parse(JSON.stringify(this.db)) as DatabaseSchema;
+  }
+
+  getSystemLogs(limit = 100): SystemLogEntry[] {
+    const safeLimit = Math.max(1, Math.min(500, Math.floor(limit) || 100));
+    return [...this.db.systemLogs]
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, safeLimit);
+  }
+
+  addSystemLog(entry: Omit<SystemLogEntry, 'id' | 'createdAt'> & Partial<Pick<SystemLogEntry, 'createdAt'>>): SystemLogEntry {
+    const log: SystemLogEntry = {
+      ...entry,
+      id: 'log_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
+      createdAt: entry.createdAt || new Date().toISOString(),
+    };
+    this.db.systemLogs.push(log);
+    if (this.db.systemLogs.length > 2000) this.db.systemLogs.splice(0, this.db.systemLogs.length - 2000);
+    this.persist();
+    return log;
+  }
+
+  getStoreSettings(): StoreSettings {
+    return { ...DEFAULT_STORE_SETTINGS, ...this.db.storeSettings };
+  }
+
+  updateStoreSettings(
+    updates: Partial<Pick<StoreSettings, 'storeName' | 'logoUrl' | 'hotline' | 'address' | 'email'>>,
+    updatedBy: string,
+  ): StoreSettings {
+    this.db.storeSettings = {
+      ...this.getStoreSettings(),
+      ...updates,
+      updatedAt: new Date().toISOString(),
+      updatedBy: updatedBy || 'Quản trị viên',
+    };
+    this.persist();
+    return this.getStoreSettings();
+  }
+
   // --- REPORTS & ANALYTICS ---
   getReports() {
     const totalOrders = this.db.orders.length;
@@ -788,7 +910,9 @@ class DataStoreService {
     const cancelledOrders = this.db.orders.filter(o => o.orderStatus === 'CANCELLED');
     const pendingOrders = this.db.orders.filter(o => o.orderStatus === 'PENDING' || o.orderStatus === 'CONFIRMED' || o.orderStatus === 'PREPARING');
 
-    const totalRevenue = completedOrders.reduce((sum, o) => sum + o.total, 0);
+    // Revenue charts use completed orders only and exclude refunded orders.
+    const revenueOrders = completedOrders.filter(o => o.paymentStatus !== 'REFUNDED');
+    const totalRevenue = revenueOrders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
 
     const customers = this.db.users.filter(u => u.role === 'CUSTOMER');
     const employees = this.db.users.filter(u => u.role === 'EMPLOYEE');
@@ -799,15 +923,68 @@ class DataStoreService {
       .sort((a, b) => (b.sold || 0) - (a.sold || 0))
       .slice(0, 6);
 
-    // Revenue by Month for charts
-    const monthlyRevenue = [
-      { month: 'T09/25', revenue: 14200000, orders: 48 },
-      { month: 'T10/25', revenue: 18500000, orders: 62 },
-      { month: 'T11/25', revenue: 21300000, orders: 75 },
-      { month: 'T12/25', revenue: 26800000, orders: 89 },
-      { month: 'T01/26', revenue: 31500000, orders: 104 },
-      { month: 'T02/26', revenue: totalRevenue + 15400000, orders: totalOrders + 32 },
-    ];
+    // Revenue trend data is calculated from actual order records, not demo values.
+    // Prefer completedAt; fall back to createdAt for legacy orders without completion dates.
+    // Use Vietnam local calendar dates (UTC+7), regardless of the server timezone.
+    const revenueByDay = new Map<string, { revenue: number; orders: number }>();
+    const revenueByMonth = new Map<string, { revenue: number; orders: number }>();
+    const revenueByYear = new Map<string, { revenue: number; orders: number }>();
+    const vietnamOffsetMs = 7 * 60 * 60 * 1000;
+    const addToBucket = (map: Map<string, { revenue: number; orders: number }>, key: string, amount: number) => {
+      const current = map.get(key) || { revenue: 0, orders: 0 };
+      current.revenue += amount;
+      current.orders += 1;
+      map.set(key, current);
+    };
+
+    for (const order of revenueOrders) {
+      const orderDate = new Date(order.completedAt || order.createdAt);
+      if (!Number.isFinite(orderDate.getTime())) continue;
+
+      const vietnamDate = new Date(orderDate.getTime() + vietnamOffsetMs);
+      const dateKey = vietnamDate.toISOString().slice(0, 10);
+      const monthKey = dateKey.slice(0, 7);
+      const yearKey = dateKey.slice(0, 4);
+      const amount = Number(order.total) || 0;
+
+      addToBucket(revenueByDay, dateKey, amount);
+      addToBucket(revenueByMonth, monthKey, amount);
+      addToBucket(revenueByYear, yearKey, amount);
+    }
+
+    const now = new Date();
+    const vietnamNow = new Date(now.getTime() + vietnamOffsetMs);
+    const todayUtc = new Date(Date.UTC(vietnamNow.getUTCFullYear(), vietnamNow.getUTCMonth(), vietnamNow.getUTCDate()));
+
+    // Last 30 calendar days including today.
+    const dailyRevenue = Array.from({ length: 30 }, (_, index) => {
+      const date = new Date(todayUtc);
+      date.setUTCDate(todayUtc.getUTCDate() - (29 - index));
+      const key = date.toISOString().slice(0, 10);
+      const bucket = revenueByDay.get(key) || { revenue: 0, orders: 0 };
+      const day = String(date.getUTCDate()).padStart(2, '0');
+      const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+      return { date: key, day: `${day}/${month}`, label: `${day}/${month}`, ...bucket };
+    });
+
+    // Last 12 calendar months including current month.
+    const monthlyRevenue = Array.from({ length: 12 }, (_, index) => {
+      const date = new Date(Date.UTC(vietnamNow.getUTCFullYear(), vietnamNow.getUTCMonth() - (11 - index), 1));
+      const key = date.toISOString().slice(0, 7);
+      const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+      const year = String(date.getUTCFullYear()).slice(-2);
+      const label = `T${month}/${year}`;
+      const bucket = revenueByMonth.get(key) || { revenue: 0, orders: 0 };
+      return { month: label, label, period: key, ...bucket };
+    });
+
+    // Last 6 calendar years including current year.
+    const currentYear = vietnamNow.getUTCFullYear();
+    const yearlyRevenue = Array.from({ length: 6 }, (_, index) => {
+      const year = String(currentYear - 5 + index);
+      const bucket = revenueByYear.get(year) || { revenue: 0, orders: 0 };
+      return { year, label: year, ...bucket };
+    });
 
     // Order status breakdown
     const orderStatusBreakdown = [
@@ -855,7 +1032,9 @@ class DataStoreService {
         totalEmployees: employees.length,
         lowStockCount: lowStockProducts.length,
       },
+      dailyRevenue,
       monthlyRevenue,
+      yearlyRevenue,
       orderStatusBreakdown,
       categoryStats,
       bestSellingProducts,

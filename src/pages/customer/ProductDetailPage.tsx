@@ -18,6 +18,13 @@ import { useAuth } from '../../contexts/AuthContext.tsx';
 import { useToast } from '../../contexts/ToastContext.tsx';
 import { i18n } from '../../i18n.ts';
 
+const REVIEW_EDIT_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+const isWithinReviewEditWindow = (createdAt?: string) => {
+  const createdTime = createdAt ? new Date(createdAt).getTime() : Number.NaN;
+  const age = Date.now() - createdTime;
+  return Number.isFinite(createdTime) && age >= 0 && age <= REVIEW_EDIT_WINDOW_MS;
+};
+
 export const ProductDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -34,6 +41,7 @@ export const ProductDetailPage: React.FC = () => {
   // Review submission state
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
+  const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
   const [submittingReview, setSubmittingReview] = useState(false);
 
   useEffect(() => {
@@ -86,24 +94,59 @@ export const ProductDetailPage: React.FC = () => {
       return;
     }
 
+    if (comment.trim().length > 2000) {
+      showToast('Nội dung đánh giá tối đa 2.000 ký tự', 'warning');
+      return;
+    }
+
     setSubmittingReview(true);
     try {
-      const res = await reviewsAPI.addReview({
-        productId: product.id,
-        rating,
-        comment: comment.trim(),
-      });
-
-      if (res.success && res.data) {
-        setReviews((prev) => [res.data, ...prev]);
-        setComment('');
-        showToast('Cảm ơn bạn đã gửi đánh giá cho sản phẩm!', 'success');
+      if (editingReviewId) {
+        const res = await reviewsAPI.updateReview(editingReviewId, { rating, comment: comment.trim() });
+        if (res.success && res.data) {
+          setReviews((prev) => prev.map((review) => review.id === editingReviewId ? res.data : review));
+          setEditingReviewId(null);
+          setComment('');
+          setRating(5);
+          showToast('Đã cập nhật đánh giá của bạn', 'success');
+        }
+      } else {
+        const res = await reviewsAPI.addReview({
+          productId: product.id,
+          rating,
+          comment: comment.trim(),
+        });
+        if (res.success && res.data) {
+          setReviews((prev) => [res.data, ...prev]);
+          setComment('');
+          setRating(5);
+          showToast('Cảm ơn bạn đã gửi đánh giá cho sản phẩm!', 'success');
+        }
       }
     } catch (err: any) {
-      showToast(err.message || 'Lỗi gửi đánh giá', 'error');
+      showToast(err.message || 'Lỗi lưu đánh giá', 'error');
     } finally {
       setSubmittingReview(false);
     }
+  };
+
+  const handleStartEditReview = (review: any) => {
+    if (review.customerId !== currentUser?.id) return;
+    if (!isWithinReviewEditWindow(review.createdAt)) {
+      showToast('Đã hết thời hạn chỉnh sửa đánh giá (7 ngày)', 'warning');
+      return;
+    }
+    setEditingReviewId(review.id);
+    setRating(review.rating);
+    setComment(review.comment || '');
+    setActiveTab('reviews');
+    showToast('Bạn đang chỉnh sửa đánh giá của mình', 'info');
+  };
+
+  const handleCancelEditReview = () => {
+    setEditingReviewId(null);
+    setRating(5);
+    setComment('');
   };
 
   if (loading) {
@@ -433,15 +476,18 @@ export const ProductDetailPage: React.FC = () => {
                     <Star key={i} size={18} fill="#f59e0b" color="#f59e0b" />
                   ))}
                 </div>
-                <div style={{ fontSize: 12, color: '#5f5e5e' }}>{reviews.length} đánh giá đã duyệt</div>
+                <div style={{ fontSize: 12, color: '#5f5e5e' }}>{reviews.filter((review) => review.status === 'APPROVED').length} đánh giá đã duyệt</div>
               </div>
             </div>
 
             {/* Write a review form */}
             <div style={{ backgroundColor: '#F5F5F3', padding: 24, borderRadius: 12, border: '1px solid #E2E3E1', marginBottom: 32 }}>
-              <h4 style={{ fontSize: 16, fontWeight: 700, color: '#101010', marginBottom: 12 }}>
-                Gửi đánh giá của bạn về sản phẩm này
+              <h4 style={{ fontSize: 16, fontWeight: 700, color: '#101010', marginBottom: 8 }}>
+                {editingReviewId ? 'Chỉnh sửa đánh giá của bạn' : 'Gửi đánh giá của bạn về sản phẩm này'}
               </h4>
+              <p style={{ fontSize: 12, color: '#777B80', marginBottom: 14 }}>
+                {editingReviewId ? 'Bạn có thể cập nhật số sao và nội dung trong vòng 7 ngày kể từ lúc gửi đánh giá.' : 'Bạn có thể chỉnh sửa đánh giá của mình trong vòng 7 ngày sau khi gửi.'}
+              </p>
               <form onSubmit={handleSubmitReview}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
                   <span style={{ fontSize: 14, fontWeight: 600, color: '#5f5e5e' }}>Đánh giá của bạn:</span>
@@ -470,18 +516,29 @@ export const ProductDetailPage: React.FC = () => {
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
                     disabled={!isAuthenticated || submittingReview}
+                    maxLength={2000}
                     required
                   />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', color: '#777B80', fontSize: 12, marginTop: 4 }}>
+                    <span>Nội dung tối đa 2.000 ký tự</span><span>{comment.length}/2000</span>
+                  </div>
                 </div>
 
-                <button
-                  type="submit"
-                  className="btn-primary"
-                  disabled={!isAuthenticated || submittingReview || !comment.trim()}
-                  style={{ opacity: isAuthenticated && comment.trim() ? 1 : 0.6 }}
-                >
-                  {submittingReview ? 'Đang gửi...' : 'Gửi Nhận Xét'}
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                  <button
+                    type="submit"
+                    className="btn-primary"
+                    disabled={!isAuthenticated || submittingReview || !comment.trim()}
+                    style={{ opacity: isAuthenticated && comment.trim() ? 1 : 0.6 }}
+                  >
+                    {submittingReview ? 'Đang lưu...' : editingReviewId ? 'Lưu chỉnh sửa' : 'Gửi Nhận Xét'}
+                  </button>
+                  {editingReviewId && (
+                    <button type="button" onClick={handleCancelEditReview} disabled={submittingReview} style={{ padding: '10px 14px', border: '1px solid #D1D5DB', borderRadius: 8, background: '#fff', cursor: 'pointer' }}>
+                      Hủy chỉnh sửa
+                    </button>
+                  )}
+                </div>
               </form>
             </div>
 
@@ -536,7 +593,31 @@ export const ProductDetailPage: React.FC = () => {
                       ))}
                     </div>
 
-                    <p style={{ fontSize: 14, color: '#202124', lineHeight: 1.5 }}>{r.comment}</p>
+                    <p style={{ fontSize: 14, color: '#202124', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{r.comment}</p>
+                    {r.updatedAt && r.updatedAt !== r.createdAt && (
+                      <div style={{ marginTop: 6, color: '#777B80', fontSize: 11 }}>Đã chỉnh sửa: {i18n.formatDate(r.updatedAt)}</div>
+                    )}
+                    {r.status === 'HIDDEN' && r.customerId === currentUser?.id && (
+                      <div style={{ marginTop: 8, color: '#B45309', fontSize: 12, fontWeight: 600 }}>Đánh giá của bạn đang được ẩn; chỉ bạn nhìn thấy nội dung này.</div>
+                    )}
+                    {r.adminReply && (
+                      <div style={{ marginTop: 14, marginLeft: 18, padding: 14, borderLeft: '3px solid #D90D24', background: '#F8F8F8', borderRadius: '0 8px 8px 0' }}>
+                        <div style={{ fontSize: 12, color: '#D90D24', fontWeight: 800, marginBottom: 5 }}>Phản hồi từ Tây Thi{r.adminReplyBy ? ` · ${r.adminReplyBy}` : ''}</div>
+                        <p style={{ margin: 0, fontSize: 13, color: '#202124', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{r.adminReply}</p>
+                        {r.adminReplyAt && <div style={{ marginTop: 5, fontSize: 11, color: '#777B80' }}>{i18n.formatDate(r.adminReplyAt)}</div>}
+                      </div>
+                    )}
+                    {isAuthenticated && r.customerId === currentUser?.id && (
+                      <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                        {isWithinReviewEditWindow(r.createdAt) ? (
+                          <button type="button" onClick={() => handleStartEditReview(r)} style={{ border: '1px solid #D90D24', background: editingReviewId === r.id ? '#FFE5E8' : '#fff', color: '#D90D24', borderRadius: 7, padding: '7px 11px', fontWeight: 700, cursor: 'pointer', fontSize: 12 }}>
+                            {editingReviewId === r.id ? 'Đang chỉnh sửa' : 'Chỉnh sửa đánh giá'}
+                          </button>
+                        ) : (
+                          <span style={{ color: '#777B80', fontSize: 11 }}>Đã hết thời hạn chỉnh sửa (7 ngày)</span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))
               )}

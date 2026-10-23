@@ -16,7 +16,9 @@ export const reportController = {
       success: true,
       data: {
         totalRevenue: reports.summary.totalRevenue,
+        dailyRevenue: reports.dailyRevenue,
         monthlyRevenue: reports.monthlyRevenue,
+        yearlyRevenue: reports.yearlyRevenue,
       },
     });
   },
