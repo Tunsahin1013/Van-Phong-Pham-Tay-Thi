@@ -1,8 +1,21 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Layers, Phone, Mail, MapPin, ShieldCheck, Truck, RefreshCw, Award } from 'lucide-react';
+import { systemAPI, StoreSettingsData } from '../api.ts';
 
 export const Footer: React.FC = () => {
+  const [storeSettings, setStoreSettings] = useState<StoreSettingsData>({
+    storeName: 'Văn phòng phẩm Tây Thi', logoUrl: '', hotline: '1900 6868',
+    address: '10 Ngõ 226 Cầu Giấy, Nghĩa Đô, Cầu Giấy, Hà Nội', email: 'lienhe@stationery.vn',
+  });
+  useEffect(() => {
+    let active = true;
+    systemAPI.getPublicSettings()
+      .then((res) => { if (active && res.success && res.data) setStoreSettings(previous => ({ ...previous, ...res.data })); })
+      .catch(() => { /* Keep defaults when the public settings API is unavailable. */ });
+    return () => { active = false; };
+  }, []);
+
   return (
     <footer className="site-footer">
       <div className="container">
@@ -42,23 +55,27 @@ export const Footer: React.FC = () => {
         <div className="footer-grid">
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-              <div style={{ width: 36, height: 36, borderRadius: 8, background: '#F21D2F', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff' }}>
-                <Layers size={20} />
-              </div>
-              <span style={{ fontSize: 20, fontWeight: 800, color: '#ffffff' }}>Tây Thi Stationery</span>
+              {storeSettings.logoUrl ? (
+                <img className="store-logo-image footer-store-logo" src={storeSettings.logoUrl} alt={storeSettings.storeName || 'Logo Tây Thi'} />
+              ) : (
+                <div style={{ width: 36, height: 36, borderRadius: 8, background: '#F21D2F', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff' }}>
+                  <Layers size={20} />
+                </div>
+              )}
+              <span style={{ fontSize: 20, fontWeight: 800, color: '#ffffff' }}>{storeSettings.storeName || 'Văn phòng phẩm Tây Thi'}</span>
             </div>
             <p style={{ fontSize: 14, lineHeight: 1.6, marginBottom: 20, color: '#777B80' }}>
               Hệ thống cung cấp giải pháp văn phòng phẩm trọn gói cho học sinh, sinh viên và doanh nghiệp. Chất lượng đỉnh cao, giá thành cạnh tranh nhất thị trường.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, fontSize: 13 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <MapPin size={16} color="#F21D2F" /> 10 Ngõ 226 Cầu Giấy, Nghĩa Đô, Cầu Giấy, Hà Nội
+                <MapPin size={16} color="#F21D2F" /> {storeSettings.address}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <Phone size={16} color="#F21D2F" /> Hotline: 1900 6868 - (028) 3823 4850
+                <Phone size={16} color="#F21D2F" /> Hotline: {storeSettings.hotline}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <Mail size={16} color="#F21D2F" /> Email: lienhe@stationery.vn
+                <Mail size={16} color="#F21D2F" /> Email: {storeSettings.email}
               </div>
             </div>
           </div>
@@ -107,14 +124,14 @@ export const Footer: React.FC = () => {
               <button className="btn-primary" style={{ padding: '10px 16px', fontSize: 13 }}>Gửi</button>
             </div>
             <div style={{ marginTop: 20, fontSize: 12, color: '#5f5e5e' }}>
-              Phương thức thanh toán hỗ trợ: Tiền mặt khi nhận hàng (COD), chuyển khoản QR ngân hàng, Momo và VNPAY.
+              Phương thức thanh toán hỗ trợ: Tiền mặt khi nhận hàng (COD) và chuyển khoản ngân hàng.
             </div>
           </div>
         </div>
 
         {/* Footer Bottom Copyright */}
         <div className="footer-bottom">
-          <div>© 2026 Stationery Shop. Đề tài: Phát triển website dịch vụ bán văn phòng phẩm.</div>
+          <div>© 2026 {storeSettings.storeName || 'Văn phòng phẩm Tây Thi'}. Website thương mại điện tử.</div>
           <div style={{ display: 'flex', gap: 16 }}>
             <span>Phát triển phần mềm hướng dịch vụ</span>
             <span>•</span>

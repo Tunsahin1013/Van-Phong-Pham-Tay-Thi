@@ -13,6 +13,8 @@ import chatRoutes from './chatRoutes.ts';
 import reportRoutes from './reportRoutes.ts';
 import supplierRoutes from './supplierRoutes.ts';
 import userRoutes from './userRoutes.ts';
+import systemRoutes from './systemRoutes.ts';
+import siteContentRoutes from './siteContentRoutes.ts';
 
 const apiRouter = Router();
 
@@ -30,5 +32,7 @@ apiRouter.use('/chats', chatRoutes);
 apiRouter.use('/reports', reportRoutes);
 apiRouter.use('/suppliers', supplierRoutes);
 apiRouter.use('/users', userRoutes);
+apiRouter.use('/system', systemRoutes);
+apiRouter.use('/site-content', siteContentRoutes);
 
 export default apiRouter;

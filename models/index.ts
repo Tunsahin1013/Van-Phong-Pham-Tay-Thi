@@ -224,7 +224,11 @@ export interface IReview extends Document {
   rating: number;
   comment: string;
   status: 'APPROVED' | 'HIDDEN';
+  adminReply?: string;
+  adminReplyAt?: Date;
+  adminReplyBy?: string;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 const ReviewSchema = new Schema<IReview>(
@@ -237,6 +241,9 @@ const ReviewSchema = new Schema<IReview>(
     rating: { type: Number, required: true, min: 1, max: 5 },
     comment: { type: String, required: true },
     status: { type: String, enum: ['APPROVED', 'HIDDEN'], default: 'APPROVED' },
+    adminReply: { type: String, default: '' },
+    adminReplyAt: { type: Date },
+    adminReplyBy: { type: String, default: '' },
   },
   { timestamps: true }
 );

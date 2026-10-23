@@ -174,6 +174,18 @@ export const reviewsAPI = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+  updateReview: (id: string, data: { rating: number; comment: string }) =>
+    request<{ success: boolean; message: string; data: any }>(`/reviews/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+  replyToReview: (id: string, reply: string) =>
+    request<{ success: boolean; message: string; data: any }>(`/reviews/${id}/reply`, {
+      method: 'PUT',
+      body: JSON.stringify({ reply }),
+    }),
+  deleteReviewReply: (id: string) =>
+    request<{ success: boolean; message: string; data: any }>(`/reviews/${id}/reply`, { method: 'DELETE' }),
   updateStatus: (id: string, status: 'APPROVED' | 'HIDDEN') =>
     request<{ success: boolean; message: string; data: any }>(`/reviews/${id}/status`, {
       method: 'PUT',
@@ -281,4 +293,105 @@ export const usersAPI = {
 
 export const siteContentAPI = {
   get: () => request<{ success: boolean; data: any }>('/site-content'),
+  update: (data: any) => request<{ success: boolean; message: string; data: any }>('/site-content', {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }),
+};
+
+
+export interface StoreSettingsData {
+  storeName: string;
+  logoUrl: string;
+  hotline: string;
+  address: string;
+  email: string;
+  updatedAt?: string;
+  updatedBy?: string;
+}
+
+export interface SystemLogData {
+  id: string;
+  actorId?: string;
+  actorName: string;
+  actorRole: string;
+  action: string;
+  method: string;
+  path: string;
+  statusCode: number;
+  ip?: string;
+  userAgent?: string;
+  details?: string;
+  createdAt: string;
+}
+
+export interface ProductInventoryReportRow {
+  productId: string;
+  name: string;
+  code: string;
+  categoryName: string;
+  brand: string;
+  stock: number;
+  soldInPeriod: number;
+  price: number;
+  lastSoldAt: string | null;
+}
+
+export interface ProductInventoryReportData {
+  generatedAt: string;
+  days: number;
+  lowStockThreshold: number;
+  slowMovingThreshold: number;
+  summary: { activeProducts: number; lowStockCount: number; outOfStockCount: number; slowMovingCount: number };
+  lowStockProducts: ProductInventoryReportRow[];
+  slowMovingProducts: ProductInventoryReportRow[];
+}
+
+export interface CustomerInsightRow {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  createdAt: string;
+  completedOrderCount: number;
+  totalSpent: number;
+  lastOrderAt: string | null;
+}
+
+export interface CustomerInsightsReportData {
+  generatedAt: string;
+  newCustomerDays: number;
+  frequentCustomerLimit: number;
+  summary: { newCustomerCount: number; customersWithCompletedOrders: number };
+  newCustomers: CustomerInsightRow[];
+  frequentCustomers: CustomerInsightRow[];
+}
+
+export const systemAPI = {
+  getPublicSettings: () => request<{ success: boolean; data: StoreSettingsData }>('/system/settings/public'),
+  getSettings: () => request<{ success: boolean; data: StoreSettingsData }>('/system/settings'),
+  updateSettings: (data: StoreSettingsData) => request<{ success: boolean; message: string; data: StoreSettingsData }>('/system/settings', {
+    method: 'PUT', body: JSON.stringify(data),
+  }),
+  getProductInventoryReport: (params: { days?: number; lowStockThreshold?: number; slowMovingThreshold?: number } = {}) => {
+    const query = new URLSearchParams(Object.entries(params).reduce<Record<string, string>>((acc, [key, value]) => {
+      if (value !== undefined && value !== null) acc[key] = String(value);
+      return acc;
+    }, {})).toString();
+    return request<{ success: boolean; data: ProductInventoryReportData }>(`/system/reports/product-inventory${query ? `?${query}` : ''}`);
+  },
+  getCustomerInsightsReport: (params: { days?: number; limit?: number } = {}) => {
+    const query = new URLSearchParams(Object.entries(params).reduce<Record<string, string>>((acc, [key, value]) => {
+      if (value !== undefined && value !== null) acc[key] = String(value);
+      return acc;
+    }, {})).toString();
+    return request<{ success: boolean; data: CustomerInsightsReportData }>(`/system/reports/customer-insights${query ? `?${query}` : ''}`);
+  },
+  getLogs: (params: { limit?: number; q?: string; status?: string } = {}) => {
+    const query = new URLSearchParams(Object.entries(params).reduce<Record<string, string>>((acc, [key, value]) => {
+      if (value !== undefined && value !== null && value !== '') acc[key] = String(value);
+      return acc;
+    }, {})).toString();
+    return request<{ success: boolean; data: SystemLogData[]; total: number }>(`/system/logs${query ? `?${query}` : ''}`);
+  },
 };

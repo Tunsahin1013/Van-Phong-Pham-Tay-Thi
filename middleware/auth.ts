@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { dataStore } from '../services/dataStore.ts';
 import { UserItem } from '../data/seedData.ts';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'stationery_shop_super_secret_jwt_key_2026';
+const JWT_SECRET = process.env.JWT_SECRET || 'REPLACE_WITH_A_LONG_RANDOM_SECRET';
 
 export interface AuthRequest extends Request {
   user?: UserItem;

@@ -144,6 +144,10 @@ export interface ReviewItem {
   comment: string;
   status: 'APPROVED' | 'HIDDEN';
   createdAt: string;
+  updatedAt?: string;
+  adminReply?: string;
+  adminReplyAt?: string;
+  adminReplyBy?: string;
 }
 
 export interface WalletTransactionItem {

@@ -226,3 +226,23 @@ stationery-shop/
 ├── package.json
 └── README.md
 ```
+
+## TÂY THI — Clean rebuild with recent user stories
+
+This integrated source layers the following work onto the repository's cached `origin/main` snapshot:
+
+- Header/banner red–black–industrial-grey brand direction and horizontal mega-menu navigation; product filters no longer require a fixed left category sidebar.
+- Storefront hero uses `src/bannerSlides.ts` as its source of truth so old `heroSlides` cached in MongoDB do not silently replace updated banner image URLs.
+- E-wallet customer features and active wallet routes are removed from the storefront/API; the old `/wallet` URL redirects to `/vouchers`. Legacy wallet-shaped fields remain only where needed to read historical records compatibly.
+- Review editing by the owning customer within seven days and Admin replies to customer reviews.
+- Epic 12: store settings, JSON backup export, CSV order/revenue export, activity logs.
+- US72/US73: inventory health (low-stock/slow-moving products) and customer insights reports.
+- Revenue dashboard uses a dropdown for daily, monthly, and yearly real order revenue.
+- US72 inventory tables are compact, scrollable boards that can be dragged to swap their positions in the dashboard section.
+
+### Environment and local data safety
+
+- Copy your private `.env` from your existing local project into the root of this project. Do not commit it.
+- `data/db.json` is intentionally omitted from this archive because a local JSON snapshot may contain personal data and password hashes. Keep your own backup; the data store initializes seed data when no local snapshot is present.
+- The app may fall back to JSON storage when MongoDB Atlas is unavailable. Confirm the server log says the database connection succeeded before changing production data.
+- The archive excludes `.git`, `node_modules`, `dist`, `.env`, `.files.env`, and `data/db.json`. Use `APPLY_CLEAN_REBUILD.ps1` to apply this source into a fresh Git clone while preserving its `.git`, your local `.env`, any existing `data/db.json`, and installed dependencies.

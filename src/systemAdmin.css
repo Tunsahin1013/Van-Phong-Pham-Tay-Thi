@@ -1,0 +1,53 @@
+/* Epic 12: configurable store identity and system administration panel. */
+.logo-brand {
+  flex: 0 0 auto;
+  min-width: 0;
+  max-width: 290px;
+  gap: 10px;
+}
+.logo-copy {
+  min-width: 0;
+  max-width: 210px;
+  display: flex;
+  flex-direction: column;
+}
+.logo-wordmark {
+  display: block;
+  max-width: 210px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.logo-tagline {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-muted, #777B80);
+  letter-spacing: .11em;
+  margin-top: 2px;
+  white-space: nowrap;
+}
+.store-logo-image {
+  display: block;
+  width: auto;
+  max-width: 96px;
+  height: 44px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+.footer-store-logo { max-width: 80px; height: 36px; object-fit: contain; }
+.system-spin { animation: system-spin 1s linear infinite; }
+@keyframes system-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 900px) {
+  .logo-brand { max-width: 210px; }
+  .logo-copy, .logo-wordmark { max-width: 142px; }
+  .store-logo-image { max-width: 68px; height: 38px; }
+}
+
+@media (max-width: 600px) {
+  .logo-brand { max-width: 145px; gap: 6px; }
+  .logo-copy, .logo-wordmark { max-width: 105px; }
+  .logo-wordmark { font-size: 15px; }
+  .logo-tagline { display: none; }
+  .store-logo-image { max-width: 48px; height: 32px; }
+}
