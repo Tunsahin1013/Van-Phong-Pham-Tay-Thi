@@ -31,3 +31,8 @@
 ## Safety / environment
 - No `.env`, `.files.env`, `.git`, `node_modules`, `dist`, or `data/db.json` in this archive.
 - The apply script preserves the user's local `.env`, `.git`, node_modules and existing JSON snapshot.
+
+## Epic 7 – Đánh giá sản phẩm (US44, US45)
+- US44: khách hàng sửa đánh giá của chính mình trong 7 ngày; backend xác minh role, quyền sở hữu, thời hạn và dữ liệu nhập.
+- US45: Admin gửi/cập nhật/xóa phản hồi của cửa hàng mà không xóa đánh giá gốc; phản hồi hiển thị trên trang sản phẩm.
+- Chi tiết và checklist kiểm thử: `EPIC7_US44_US45.md`.

@@ -1,6 +1,30 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth.ts';
 import { dataStore } from '../services/dataStore.ts';
+import { VoucherItem } from '../data/seedData.ts';
+
+const publishExpiringVoucherNotifications = () => {
+  const now = Date.now();
+  const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
+
+  dataStore.getVouchers().forEach((voucher: VoucherItem) => {
+    const startsAt = new Date(voucher.startDate).getTime();
+    const endsAt = new Date(voucher.endDate).getTime();
+    const remaining = endsAt - now;
+    const availableUses = voucher.usageLimit <= 0 || voucher.usedCount < voucher.usageLimit;
+    if (voucher.status !== 'ACTIVE' || !Number.isFinite(startsAt) || !Number.isFinite(endsAt) || startsAt > now || remaining <= 0 || remaining > threeDaysMs || !availableUses || voucher.expiryNoticeSentAt) return;
+
+    // Mark first so repeated polling doesn't broadcast duplicate notices.
+    dataStore.updateVoucher(voucher.id, { expiryNoticeSentAt: new Date(now).toISOString() });
+    dataStore.createNotification({
+      userId: 'ALL',
+      title: `Voucher ${voucher.code} sắp hết hạn`,
+      message: `${voucher.name} sẽ hết hạn vào ${new Date(voucher.endDate).toLocaleDateString('vi-VN')}. Hãy sử dụng trước khi hết hạn.`,
+      type: 'VOUCHER',
+      link: '/vouchers',
+    });
+  });
+};
 
 export const notificationController = {
   // GET /api/notifications
@@ -9,6 +33,8 @@ export const notificationController = {
       return res.status(401).json({ success: false, message: 'Chưa đăng nhập' });
     }
 
+    // US41: lazily evaluate expiry notices whenever an authenticated customer refreshes notifications.
+    publishExpiringVoucherNotifications();
     const notifs = dataStore.getNotifications(req.user.id);
     const unreadCount = notifs.filter(n => !n.isRead).length;
 
