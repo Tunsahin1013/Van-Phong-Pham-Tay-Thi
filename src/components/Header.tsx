@@ -287,6 +287,13 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAuthModal }) => {
                   </div>
                   <div style={{ padding: '6px 0' }}>
                     <Link
+                      to="/account"
+                      onClick={() => setShowUserMenu(false)}
+                      style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', fontSize: 13, color: '#202124' }}
+                    >
+                      <UserIcon size={16} /> Hồ sơ & địa chỉ
+                    </Link>
+                    <Link
                       to="/orders"
                       onClick={() => setShowUserMenu(false)}
                       style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', fontSize: 13, color: '#202124' }}

@@ -203,22 +203,12 @@ export const VouchersPage: React.FC = () => {
 
                   <div style={{ fontSize: 13, color: '#5f5e5e', lineHeight: 1.6, marginBottom: 16 }}>
                     <div>• Đơn tối thiểu: <strong>{i18n.currency(v.minimumOrder)}</strong></div>
-                    {v.maximumDiscount > 0 && v.type === 'PERCENTAGE' && (
+                    {v.maximumDiscount > 0 && (
                       <div>• Giảm tối đa: <strong>{i18n.currency(v.maximumDiscount)}</strong></div>
-                    )}
-                    {Number(v.usageLimit) > 0 && (
-                      <div>• Còn lượt sử dụng: <strong>{Math.max(0, Number(v.usageLimit) - Number(v.usedCount || 0))}</strong></div>
                     )}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#777B80', fontSize: 12, marginTop: 4 }}>
                       <Clock size={13} /> Hạn sử dụng: {i18n.formatDate(v.endDate)}
                     </div>
-                    {(() => {
-                      const remainingMs = new Date(v.endDate).getTime() - Date.now();
-                      if (remainingMs > 0 && remainingMs <= 3 * 24 * 60 * 60 * 1000) {
-                        return <div style={{ marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 8px', borderRadius: 6, background: '#FFF0F1', color: '#D90D24', fontSize: 11, fontWeight: 800 }}>Sắp hết hạn</div>;
-                      }
-                      return null;
-                    })()}
                   </div>
                 </div>
 

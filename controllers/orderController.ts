@@ -38,6 +38,28 @@ export const orderController = {
         return res.status(400).json({ success: false, message: 'Vui lòng cung cấp đầy đủ họ tên, số điện thoại và địa chỉ nhận hàng' });
       }
 
+      // Aggregate duplicate product lines before checking available stock. New orders reserve
+      // quantities; stock is physically deducted once on completion by DataStoreService.
+      const requestedByProduct = new Map<string, number>();
+      for (const item of items) {
+        const productId = String(item.productId || '');
+        const quantity = Number(item.quantity);
+        if (!productId || !Number.isInteger(quantity) || quantity <= 0) {
+          return res.status(400).json({ success: false, message: 'Sản phẩm hoặc số lượng trong giỏ hàng không hợp lệ.' });
+        }
+        requestedByProduct.set(productId, (requestedByProduct.get(productId) || 0) + quantity);
+      }
+      for (const [productId, quantity] of requestedByProduct) {
+        const product = dataStore.getProductById(productId);
+        if (!product || product.status !== 'ACTIVE') {
+          return res.status(400).json({ success: false, message: 'Một sản phẩm trong giỏ hàng hiện không khả dụng.' });
+        }
+        const available = dataStore.getAvailableStock(productId);
+        if (available < quantity) {
+          return res.status(400).json({ success: false, message: `Sản phẩm "${product.name}" chỉ còn ${available} ${product.unit} có thể đặt, không đủ số lượng ${quantity}.` });
+        }
+      }
+
       // Check stock and calculate subtotal
       let calculatedSubtotal = 0;
       const verifiedItems: OrderItemProduct[] = [];
@@ -48,12 +70,6 @@ export const orderController = {
           return res.status(400).json({ success: false, message: `Sản phẩm ${item.name || item.productId} hiện không khả dụng` });
         }
 
-        if (prod.stock < item.quantity) {
-          return res.status(400).json({
-            success: false,
-            message: `Sản phẩm "${prod.name}" chỉ còn ${prod.stock} ${prod.unit} trong kho, không đủ số lượng ${item.quantity} bạn yêu cầu`,
-          });
-        }
 
         const price = prod.salePrice || prod.price;
         calculatedSubtotal += price * item.quantity;
@@ -222,11 +238,25 @@ export const orderController = {
       const { id } = req.params;
       const { orderStatus, paymentStatus, cancelReason } = req.body;
 
-      if (!orderStatus) {
-        return res.status(400).json({ success: false, message: 'Vui lòng cung cấp trạng thái mới' });
+      const allowedStatuses = ['PENDING', 'CONFIRMED', 'PREPARING', 'SHIPPING', 'COMPLETED', 'CANCELLED'];
+      if (!allowedStatuses.includes(orderStatus)) {
+        return res.status(400).json({ success: false, message: 'Trạng thái đơn hàng không hợp lệ.' });
+      }
+      const existing = dataStore.getOrderById(id);
+      if (!existing) return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng' });
+      const transitions: Record<string, string[]> = {
+        PENDING: ['CONFIRMED', 'CANCELLED'],
+        CONFIRMED: ['PREPARING', 'CANCELLED'],
+        PREPARING: ['SHIPPING', 'CANCELLED'],
+        SHIPPING: ['COMPLETED', 'CANCELLED'],
+        COMPLETED: [],
+        CANCELLED: [],
+      };
+      if (orderStatus !== existing.orderStatus && !(transitions[existing.orderStatus] || []).includes(orderStatus)) {
+        return res.status(409).json({ success: false, message: `Không thể chuyển trạng thái từ ${existing.orderStatus} sang ${orderStatus}.` });
       }
 
-      const updated = dataStore.updateOrderStatus(id, orderStatus, paymentStatus, cancelReason);
+      const updated = dataStore.updateOrderStatus(id, orderStatus, paymentStatus, cancelReason, req.user?.name || 'Nhân viên');
       if (!updated) {
         return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng' });
       }
@@ -237,6 +267,34 @@ export const orderController = {
     }
   },
 
+  // POST /api/orders/:id/return-request — customer requests return/refund review.
+  requestReturn: (req: AuthRequest, res: Response) => {
+    if (!req.user) return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập.' });
+    const reason = typeof req.body.reason === 'string' ? req.body.reason.trim() : '';
+    if (reason.length < 8 || reason.length > 1200) {
+      return res.status(400).json({ success: false, message: 'Vui lòng nhập lý do từ 8 đến 1.200 ký tự.' });
+    }
+    try {
+      const order = dataStore.createReturnRequest(req.params.id, req.user.id, reason);
+      if (!order) return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng của bạn.' });
+      return res.status(201).json({ success: true, message: 'Đã gửi yêu cầu trả hàng/hoàn tiền. Cửa hàng sẽ phản hồi sau khi kiểm tra.', data: order });
+    } catch (error) {
+      return res.status(400).json({ success: false, message: (error as Error).message });
+    }
+  },
+
+  // PUT /api/orders/:id/return-request — staff decides the claim; payment refund must be processed separately.
+  updateReturnRequest: (req: AuthRequest, res: Response) => {
+    const status = req.body.status;
+    const resolutionNote = typeof req.body.resolutionNote === 'string' ? req.body.resolutionNote.trim().slice(0, 1200) : '';
+    if (!['APPROVED', 'REJECTED', 'RESOLVED'].includes(status)) {
+      return res.status(400).json({ success: false, message: 'Trạng thái xử lý yêu cầu không hợp lệ.' });
+    }
+    const order = dataStore.updateReturnRequest(req.params.id, status, req.user?.name || 'Nhân viên', resolutionNote);
+    if (!order) return res.status(404).json({ success: false, message: 'Đơn hàng chưa có yêu cầu trả hàng/hoàn tiền.' });
+    return res.json({ success: true, message: 'Đã cập nhật yêu cầu trả hàng/hoàn tiền.', data: order });
+  },
+
   // POST /api/orders/:id/cancel
   cancelOrder: (req: AuthRequest, res: Response) => {
     const { id } = req.params;
@@ -245,6 +303,9 @@ export const orderController = {
     const order = dataStore.getOrderById(id);
     if (!order) {
       return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng' });
+    }
+    if (order.orderStatus === 'COMPLETED' || order.orderStatus === 'CANCELLED') {
+      return res.status(409).json({ success: false, message: 'Đơn đã hoàn thành hoặc đã hủy không thể hủy lại. Nếu cần khiếu nại, hãy dùng luồng trả hàng/hoàn tiền.' });
     }
 
     // If customer, only allow canceling PENDING orders
@@ -272,7 +333,8 @@ export const orderController = {
       id,
       'CANCELLED',
       'UNPAID',
-      reason || 'Khách hàng yêu cầu hủy đơn'
+      reason || 'Khách hàng yêu cầu hủy đơn',
+      req.user?.name || 'Khách hàng'
     );
 
     return res.json({ success: true, message: 'Đã hủy đơn hàng thành công', data: cancelled });

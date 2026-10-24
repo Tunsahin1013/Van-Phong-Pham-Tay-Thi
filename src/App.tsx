@@ -16,6 +16,8 @@ import { ProductDetailPage } from './pages/customer/ProductDetailPage.tsx';
 import { CartPage } from './pages/customer/CartPage.tsx';
 import { CheckoutPage } from './pages/customer/CheckoutPage.tsx';
 import { OrdersPage } from './pages/customer/OrdersPage.tsx';
+import { AccountPage } from './pages/customer/AccountPage.tsx';
+import { ResetPasswordPage } from './pages/customer/ResetPasswordPage.tsx';
 import { VouchersPage } from './pages/customer/VouchersPage.tsx';
 
 // Staff & Admin Pages
@@ -72,6 +74,8 @@ const MainLayout: React.FC = () => {
           <Route path="/cart" element={<CartPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/orders" element={<OrdersPage />} />
+          <Route path="/account" element={<ProtectedRoute allowedRoles={['CUSTOMER', 'EMPLOYEE', 'ADMIN']}><AccountPage /></ProtectedRoute>} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/wallet" element={<Navigate to="/vouchers" replace />} />
           <Route path="/vouchers" element={<VouchersPage />} />
 

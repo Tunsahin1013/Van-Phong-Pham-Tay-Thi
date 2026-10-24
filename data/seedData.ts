@@ -1,5 +1,32 @@
 import bcrypt from 'bcryptjs';
 
+export interface ShippingAddressItem {
+  id: string;
+  label: string;
+  recipientName: string;
+  phone: string;
+  address: string;
+  isDefault: boolean;
+  createdAt: string;
+}
+
+export interface ReturnRequestItem {
+  status: 'REQUESTED' | 'APPROVED' | 'REJECTED' | 'RESOLVED';
+  reason: string;
+  customerNote?: string;
+  requestedAt: string;
+  updatedAt?: string;
+  reviewedBy?: string;
+  resolutionNote?: string;
+}
+
+export interface OrderTrackingEvent {
+  status: OrderItem['orderStatus'];
+  message: string;
+  createdAt: string;
+  actor?: string;
+}
+
 export interface UserItem {
   id: string;
   name: string;
@@ -12,6 +39,9 @@ export interface UserItem {
   loyaltyPoints: number;
   walletBalance?: number;
   avatar?: string;
+  addresses?: ShippingAddressItem[];
+  passwordResetTokenHash?: string;
+  passwordResetExpiresAt?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -49,6 +79,8 @@ export interface ProductItem {
   isFeatured?: boolean;
   isNewArrival?: boolean;
   isBestSeller?: boolean;
+  /** Ngưỡng tồn tối thiểu; mặc định 10 nếu dữ liệu cũ chưa có. */
+  minStock?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -87,6 +119,15 @@ export interface OrderItem {
   completedAt?: string;
   cancelledAt?: string;
   cancelReason?: string;
+  /** Đơn mới giữ tồn khi đặt và trừ tồn thực tế khi hoàn tất. */
+  inventoryDeductionMode?: 'ON_COMPLETION' | 'AT_CREATION';
+  stockDeductedAt?: string;
+  loyaltyPointsAwardedAt?: string;
+  stockOutSlipCode?: string;
+  stockOutSlipCreatedAt?: string;
+  stockOutSlipCreatedBy?: string;
+  returnRequest?: ReturnRequestItem;
+  trackingEvents?: OrderTrackingEvent[];
 }
 
 export interface InventoryItem {
@@ -102,6 +143,8 @@ export interface InventoryItem {
   supplierName?: string;
   note: string;
   createdBy: string;
+  orderId?: string;
+  documentCode?: string;
   createdAt: string;
 }
 
@@ -131,8 +174,6 @@ export interface VoucherItem {
   usedCount: number;
   status: 'ACTIVE' | 'INACTIVE';
   createdAt: string;
-  /** Timestamp of the one-time near-expiry notification sent to customers. */
-  expiryNoticeSentAt?: string;
 }
 
 export interface ReviewItem {
@@ -172,6 +213,8 @@ export interface NotificationItem {
   message: string;
   type: 'ORDER' | 'VOUCHER' | 'SYSTEM' | 'WALLET';
   isRead: boolean;
+  /** Per-user acknowledgement for broadcast notifications; avoids one user marking it read for everyone. */
+  readBy?: string[];
   link?: string;
   createdAt: string;
 }

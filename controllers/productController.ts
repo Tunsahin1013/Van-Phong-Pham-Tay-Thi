@@ -1,9 +1,10 @@
 import { Request, Response } from 'express';
+import { AuthRequest } from '../middleware/auth.ts';
 import { dataStore } from '../services/dataStore.ts';
 
 export const productController = {
   // GET /api/products
-  getProducts: (req: Request, res: Response) => {
+  getProducts: (req: AuthRequest, res: Response) => {
     try {
       const {
         search,
@@ -22,10 +23,15 @@ export const productController = {
       let list = dataStore.getProducts();
 
       // Only show ACTIVE to public if status is not explicitly set
-      if (!status) {
+      if (status === 'ALL') {
+        if (req.user?.role !== 'ADMIN') list = list.filter(p => p.status === 'ACTIVE');
+      } else if (!status) {
         list = list.filter(p => p.status === 'ACTIVE');
-      } else if (status !== 'ALL') {
+      } else if (req.user?.role === 'ADMIN') {
         list = list.filter(p => p.status === status);
+      } else {
+        // Public and non-admin callers never see inactive products, even if they pass ?status=INACTIVE.
+        list = list.filter(p => p.status === 'ACTIVE');
       }
 
       // Search keyword
@@ -133,10 +139,10 @@ export const productController = {
   },
 
   // GET /api/products/:id
-  getProductById: (req: Request, res: Response) => {
+  getProductById: (req: AuthRequest, res: Response) => {
     const { id } = req.params;
     const product = dataStore.getProductById(id);
-    if (!product) {
+    if (!product || (product.status !== 'ACTIVE' && req.user?.role !== 'ADMIN')) {
       return res.status(404).json({ success: false, message: 'Không tìm thấy sản phẩm này' });
     }
     return res.json({ success: true, data: product });
@@ -160,10 +166,20 @@ export const productController = {
         isFeatured,
         isNewArrival,
         isBestSeller,
+        minStock,
       } = req.body;
 
       if (!name || !code || !categoryId || !brand || price === undefined) {
         return res.status(400).json({ success: false, message: 'Vui lòng điền đầy đủ các thông tin bắt buộc của sản phẩm' });
+      }
+
+      const normalizedStock = stock === undefined || stock === null || stock === '' ? 0 : Number(stock);
+      if (!Number.isInteger(normalizedStock) || normalizedStock < 0) {
+        return res.status(400).json({ success: false, message: 'Tồn kho phải là số nguyên không âm.' });
+      }
+      const normalizedMinStock = minStock === undefined || minStock === null || minStock === '' ? 10 : Number(minStock);
+      if (!Number.isInteger(normalizedMinStock) || normalizedMinStock < 0) {
+        return res.status(400).json({ success: false, message: 'Ngưỡng tồn kho phải là số nguyên không âm.' });
       }
 
       // Check category
@@ -181,11 +197,12 @@ export const productController = {
         price: Number(price),
         salePrice: salePrice ? Number(salePrice) : Number(price),
         unit: unit || 'Cái',
-        stock: Number(stock) || 0,
+        stock: normalizedStock,
         image: image || 'https://images.unsplash.com/photo-1585336261026-0a6eb9df69b8?auto=format&fit=crop&w=800&q=80',
         description: description || '',
         specification: specification || '',
         status: 'ACTIVE',
+        minStock: normalizedMinStock,
         isFeatured: Boolean(isFeatured),
         isNewArrival: Boolean(isNewArrival),
         isBestSeller: Boolean(isBestSeller),
@@ -197,17 +214,61 @@ export const productController = {
     }
   },
 
+
+  // PATCH /api/products/:id/status (Admin only)
+  updateStatus: (req: Request, res: Response) => {
+    const { status } = req.body;
+    if (!['ACTIVE', 'INACTIVE'].includes(status)) {
+      return res.status(400).json({ success: false, message: 'Trạng thái kinh doanh không hợp lệ.' });
+    }
+    const product = dataStore.getProductById(req.params.id);
+    if (!product) return res.status(404).json({ success: false, message: 'Không tìm thấy sản phẩm.' });
+    const updated = dataStore.updateProduct(req.params.id, { status });
+    return res.json({ success: true, message: status === 'ACTIVE' ? 'Đã bật kinh doanh sản phẩm.' : 'Đã tạm ẩn sản phẩm khỏi cửa hàng.', data: updated });
+  },
+
   // PUT /api/products/:id
-  updateProduct: (req: Request, res: Response) => {
+  updateProduct: (req: AuthRequest, res: Response) => {
     try {
       const { id } = req.params;
-      const updates = req.body;
+      const updates = { ...req.body };
+
+      // US15: business visibility is controlled only by Admin, even if an Employee calls PUT directly.
+      if (updates.status !== undefined) {
+        if (req.user?.role !== 'ADMIN') {
+          return res.status(403).json({ success: false, message: 'Chỉ quản trị viên mới được bật/tắt trạng thái kinh doanh.' });
+        }
+        if (!['ACTIVE', 'INACTIVE'].includes(updates.status)) {
+          return res.status(400).json({ success: false, message: 'Trạng thái kinh doanh không hợp lệ.' });
+        }
+      }
+
+      // Only accept fields supported by this form; never allow clients to overwrite counters/IDs.
+      const allowedFields = ['name', 'code', 'categoryId', 'categoryName', 'brand', 'price', 'salePrice', 'unit', 'stock', 'image', 'description', 'specification', 'isFeatured', 'isNewArrival', 'isBestSeller', 'status', 'minStock'];
+      for (const key of Object.keys(updates)) if (!allowedFields.includes(key)) delete updates[key];
 
       if (updates.categoryId) {
         const cat = dataStore.getCategoryById(updates.categoryId);
         if (cat) updates.categoryName = cat.name;
       }
 
+      if (updates.stock !== undefined) {
+        const newStock = Number(updates.stock);
+        const currentProduct = dataStore.getProductById(id);
+        if (!currentProduct) return res.status(404).json({ success: false, message: 'Không tìm thấy sản phẩm để cập nhật' });
+        if (!Number.isInteger(newStock) || newStock < 0) return res.status(400).json({ success: false, message: 'Tồn kho phải là số nguyên không âm.' });
+        const difference = newStock - currentProduct.stock;
+        delete updates.stock;
+        if (difference !== 0) {
+          const stockUpdated = dataStore.recordStockAdjustment(id, difference, 'Điều chỉnh tồn kho từ màn hình quản lý sản phẩm', req.user?.name || 'Quản trị viên');
+          if (!stockUpdated) return res.status(404).json({ success: false, message: 'Không thể cập nhật tồn kho.' });
+        }
+      }
+      if (updates.minStock !== undefined) {
+        const minStock = Number(updates.minStock);
+        if (!Number.isInteger(minStock) || minStock < 0) return res.status(400).json({ success: false, message: 'Ngưỡng tồn kho phải là số nguyên không âm.' });
+        updates.minStock = minStock;
+      }
       const updated = dataStore.updateProduct(id, updates);
       if (!updated) {
         return res.status(404).json({ success: false, message: 'Không tìm thấy sản phẩm để cập nhật' });

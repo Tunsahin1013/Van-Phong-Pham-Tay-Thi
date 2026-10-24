@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
+import { createHash, randomBytes } from 'node:crypto';
 import { dataStore } from '../services/dataStore.ts';
 import { generateToken, AuthRequest } from '../middleware/auth.ts';
 
@@ -45,7 +46,7 @@ export const authController = {
 
       const token = generateToken(newUser);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password: _, walletBalance: _legacyWalletBalance, ...userSafe } = newUser;
+      const { password: _, walletBalance: _legacyWalletBalance, passwordResetTokenHash: _resetHash, passwordResetExpiresAt: _resetExpires, ...userSafe } = newUser;
 
       return res.status(201).json({
         success: true,
@@ -83,7 +84,7 @@ export const authController = {
 
       const token = generateToken(user);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password: _, walletBalance: _legacyWalletBalance, ...userSafe } = user;
+      const { password: _, walletBalance: _legacyWalletBalance, passwordResetTokenHash: _resetHash, passwordResetExpiresAt: _resetExpires, ...userSafe } = user;
 
       return res.json({
         success: true,
@@ -107,37 +108,126 @@ export const authController = {
       return res.status(401).json({ success: false, message: 'Chưa đăng nhập' });
     }
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password: _, walletBalance: _legacyWalletBalance, ...userSafe } = req.user;
+    const { password: _, walletBalance: _legacyWalletBalance, passwordResetTokenHash: _resetHash, passwordResetExpiresAt: _resetExpires, ...userSafe } = req.user;
     return res.json({ success: true, user: userSafe });
   },
 
-  // POST /api/auth/forgot-password
-  forgotPassword: (req: Request, res: Response) => {
-    const { email } = req.body;
-    if (!email) {
-      return res.status(400).json({ success: false, message: 'Vui lòng cung cấp email đã đăng ký' });
-    }
+  // POST /api/auth/forgot-password. Always return the same public message to avoid account enumeration.
+  forgotPassword: async (req: Request, res: Response) => {
+    const email = typeof req.body.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+    if (!email) return res.status(400).json({ success: false, message: 'Vui lòng nhập email đã đăng ký.' });
 
+    const genericMessage = 'Nếu email tồn tại, hướng dẫn khôi phục mật khẩu sẽ được gửi đến hộp thư của bạn.';
     const user = dataStore.getUserByEmail(email);
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản với email này' });
+    if (!user) return res.json({ success: true, message: genericMessage });
+
+    try {
+      const rawToken = randomBytes(32).toString('hex');
+      const tokenHash = createHash('sha256').update(rawToken).digest('hex');
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+      dataStore.updateUser(user.id, { passwordResetTokenHash: tokenHash, passwordResetExpiresAt: expiresAt });
+      const appUrl = (process.env.APP_URL || 'http://localhost:3000').replace(/\/$/, '');
+      const resetUrl = `${appUrl}/reset-password?token=${rawToken}`;
+      const apiKey = process.env.RESEND_API_KEY;
+      const from = process.env.EMAIL_FROM;
+
+      if (apiKey && from) {
+        const emailResponse = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            from,
+            to: [user.email],
+            subject: 'Khôi phục mật khẩu Tây Thi',
+            html: `<p>Xin chào ${user.name.replace(/[&<>"']/g, '')},</p><p>Nhấn liên kết dưới đây để đặt mật khẩu mới. Liên kết hết hạn sau 15 phút.</p><p><a href="${resetUrl}">Khôi phục mật khẩu</a></p><p>Nếu bạn không yêu cầu, hãy bỏ qua email này.</p>`,
+          }),
+        });
+        if (!emailResponse.ok) console.error('Email reset could not be sent:', await emailResponse.text());
+        return res.json({ success: true, message: genericMessage });
+      }
+
+      // Local development only: show reset link so the flow can be tested without an email provider.
+      if (process.env.NODE_ENV !== 'production') {
+        console.info(`[PASSWORD RESET DEV ONLY] ${user.email}: ${resetUrl}`);
+        return res.json({ success: true, message: genericMessage, resetLink: resetUrl });
+      }
+      console.error('Password reset requested but RESEND_API_KEY and EMAIL_FROM are not configured.');
+      return res.json({ success: true, message: genericMessage });
+    } catch (error) {
+      console.error('Password reset request failed:', error);
+      return res.json({ success: true, message: genericMessage });
     }
+  },
 
-    // Reset password to default 123456 for convenience in test/demo
-    const newHash = bcrypt.hashSync('123456', 10);
-    dataStore.updateUser(user.id, { password: newHash });
-
-    dataStore.createNotification({
-      userId: user.id,
-      title: 'Mật khẩu đã được cấp lại 🔑',
-      message: 'Mật khẩu tài khoản của bạn đã được khôi phục về mặc định: 123456. Vui lòng đổi lại mật khẩu sau khi đăng nhập!',
-      type: 'SYSTEM',
+  // POST /api/auth/reset-password
+  resetPassword: (req: Request, res: Response) => {
+    const token = typeof req.body.token === 'string' ? req.body.token.trim() : '';
+    const newPassword = typeof req.body.newPassword === 'string' ? req.body.newPassword : '';
+    if (!token || newPassword.length < 8) {
+      return res.status(400).json({ success: false, message: 'Mã khôi phục không hợp lệ hoặc mật khẩu mới phải có ít nhất 8 ký tự.' });
+    }
+    const tokenHash = createHash('sha256').update(token).digest('hex');
+    const user = dataStore.getUsers().find((candidate) => candidate.passwordResetTokenHash === tokenHash);
+    if (!user || !user.passwordResetExpiresAt || new Date(user.passwordResetExpiresAt).getTime() < Date.now()) {
+      if (user) dataStore.updateUser(user.id, { passwordResetTokenHash: undefined, passwordResetExpiresAt: undefined });
+      return res.status(400).json({ success: false, message: 'Liên kết khôi phục đã hết hạn hoặc không hợp lệ. Vui lòng yêu cầu liên kết mới.' });
+    }
+    dataStore.updateUser(user.id, {
+      password: bcrypt.hashSync(newPassword, 10),
+      passwordResetTokenHash: undefined,
+      passwordResetExpiresAt: undefined,
     });
+    return res.json({ success: true, message: 'Đặt lại mật khẩu thành công. Bạn có thể đăng nhập bằng mật khẩu mới.' });
+  },
 
-    return res.json({
-      success: true,
-      message: 'Hướng dẫn khôi phục mật khẩu đã được gửi. Mật khẩu tạm thời đã đặt về: 123456',
-    });
+  // GET /api/auth/addresses
+  getAddresses: (req: AuthRequest, res: Response) => {
+    if (!req.user) return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập.' });
+    return res.json({ success: true, data: dataStore.getUserAddresses(req.user.id) });
+  },
+
+  // POST /api/auth/addresses
+  addAddress: (req: AuthRequest, res: Response) => {
+    if (!req.user) return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập.' });
+    const { label, recipientName, phone, address, isDefault = false } = req.body;
+    if (![recipientName, phone, address].every((value) => typeof value === 'string' && value.trim())) {
+      return res.status(400).json({ success: false, message: 'Vui lòng nhập người nhận, số điện thoại và địa chỉ đầy đủ.' });
+    }
+    const created = dataStore.addUserAddress(req.user.id, { label: typeof label === 'string' ? label : 'Địa chỉ nhận hàng', recipientName, phone, address, isDefault: Boolean(isDefault) });
+    if (!created) return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản.' });
+    return res.status(201).json({ success: true, message: 'Đã thêm địa chỉ giao hàng.', data: created });
+  },
+
+  // PUT /api/auth/addresses/:addressId
+  updateAddress: (req: AuthRequest, res: Response) => {
+    if (!req.user) return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập.' });
+    const updates: Record<string, unknown> = {};
+    for (const field of ['label', 'recipientName', 'phone', 'address'] as const) {
+      if (req.body[field] !== undefined) {
+        if (typeof req.body[field] !== 'string' || !req.body[field].trim()) return res.status(400).json({ success: false, message: `Trường ${field} không hợp lệ.` });
+        updates[field] = req.body[field].trim();
+      }
+    }
+    if (req.body.isDefault !== undefined) updates.isDefault = Boolean(req.body.isDefault);
+    const updated = dataStore.updateUserAddress(req.user.id, req.params.addressId, updates);
+    if (!updated) return res.status(404).json({ success: false, message: 'Không tìm thấy địa chỉ.' });
+    return res.json({ success: true, message: 'Đã cập nhật địa chỉ.', data: updated });
+  },
+
+  // PATCH /api/auth/addresses/:addressId/default
+  setDefaultAddress: (req: AuthRequest, res: Response) => {
+    if (!req.user) return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập.' });
+    const updated = dataStore.setDefaultUserAddress(req.user.id, req.params.addressId);
+    if (!updated) return res.status(404).json({ success: false, message: 'Không tìm thấy địa chỉ.' });
+    return res.json({ success: true, message: 'Đã đặt địa chỉ mặc định.', data: updated });
+  },
+
+  // DELETE /api/auth/addresses/:addressId
+  deleteAddress: (req: AuthRequest, res: Response) => {
+    if (!req.user) return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập.' });
+    const ok = dataStore.deleteUserAddress(req.user.id, req.params.addressId);
+    if (!ok) return res.status(404).json({ success: false, message: 'Không tìm thấy địa chỉ.' });
+    return res.json({ success: true, message: 'Đã xóa địa chỉ.' });
   },
 
   // POST /api/auth/change-password
@@ -151,8 +241,8 @@ export const authController = {
       return res.status(400).json({ success: false, message: 'Vui lòng nhập mật khẩu hiện tại và mật khẩu mới' });
     }
 
-    if (newPassword.length < 6) {
-      return res.status(400).json({ success: false, message: 'Mật khẩu mới phải có ít nhất 6 ký tự' });
+    if (newPassword.length < 8) {
+      return res.status(400).json({ success: false, message: 'Mật khẩu mới phải có ít nhất 8 ký tự' });
     }
 
     const isMatch = bcrypt.compareSync(currentPassword, req.user.password);
@@ -161,7 +251,7 @@ export const authController = {
     }
 
     const newHash = bcrypt.hashSync(newPassword, 10);
-    dataStore.updateUser(req.user.id, { password: newHash });
+    dataStore.updateUser(req.user.id, { password: newHash, passwordResetTokenHash: undefined, passwordResetExpiresAt: undefined });
 
     return res.json({ success: true, message: 'Đổi mật khẩu thành công' });
   },
@@ -173,10 +263,26 @@ export const authController = {
     }
 
     const { name, phone, address, avatar } = req.body;
+    if (name !== undefined && (typeof name !== 'string' || !name.trim() || name.trim().length > 120)) {
+      return res.status(400).json({ success: false, message: 'Họ tên phải có từ 1 đến 120 ký tự.' });
+    }
+    if (phone !== undefined && (typeof phone !== 'string' || phone.length > 30)) {
+      return res.status(400).json({ success: false, message: 'Số điện thoại không hợp lệ.' });
+    }
+    if (address !== undefined && (typeof address !== 'string' || address.length > 500)) {
+      return res.status(400).json({ success: false, message: 'Địa chỉ không hợp lệ.' });
+    }
+    if (avatar !== undefined && (typeof avatar !== 'string' || avatar.length > 1000)) {
+      return res.status(400).json({ success: false, message: 'Đường dẫn ảnh đại diện không hợp lệ.' });
+    }
+
+    const normalizedName = typeof name === 'string' ? name.trim() : req.user.name;
+    const normalizedPhone = typeof phone === 'string' ? phone.trim() : req.user.phone;
+    const normalizedAddress = typeof address === 'string' ? address.trim() : req.user.address;
     const updated = dataStore.updateUser(req.user.id, {
-      name: name ?? req.user.name,
-      phone: phone ?? req.user.phone,
-      address: address ?? req.user.address,
+      name: normalizedName,
+      phone: normalizedPhone,
+      address: normalizedAddress,
       avatar: avatar ?? req.user.avatar,
     });
 
@@ -184,8 +290,21 @@ export const authController = {
       return res.status(404).json({ success: false, message: 'Không thể cập nhật thông tin' });
     }
 
+    // Keep the legacy profile address in sync with the selected default saved address.
+    if (address !== undefined && Array.isArray(updated.addresses)) {
+      const defaultAddress = updated.addresses.find((item) => item.isDefault);
+      if (defaultAddress) {
+        dataStore.updateUserAddress(req.user.id, defaultAddress.id, {
+          address: normalizedAddress,
+          ...(phone !== undefined ? { phone: normalizedPhone } : {}),
+          ...(name !== undefined ? { recipientName: normalizedName } : {}),
+        });
+      }
+    }
+
+    const safeUpdated = dataStore.getUserById(req.user.id) || updated;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password: _, walletBalance: _legacyWalletBalance, ...userSafe } = updated;
+    const { password: _, walletBalance: _legacyWalletBalance, passwordResetTokenHash: _resetHash, passwordResetExpiresAt: _resetExpires, ...userSafe } = safeUpdated;
     return res.json({ success: true, message: 'Cập nhật thông tin thành công', user: userSafe });
   },
 };
