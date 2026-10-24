@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, ShoppingBag, ArrowRight, ArrowLeft, Tag, ShieldCheck, Check } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext.tsx';
 import { i18n } from '../../i18n.ts';
+import { getProductImage } from '../../utils/productImage.ts';
 
 export const CartPage: React.FC = () => {
   const navigate = useNavigate();
@@ -100,7 +101,7 @@ export const CartPage: React.FC = () => {
               >
                 {/* Thumbnail */}
                 <div style={{ width: 80, height: 80, borderRadius: 8, overflow: 'hidden', backgroundColor: '#F5F5F3', border: '1px solid #E2E3E1' }}>
-                  <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <img src={getProductImage(item)} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
 
                 {/* Details */}

@@ -17,6 +17,7 @@ import { useCart } from '../../contexts/CartContext.tsx';
 import { useAuth } from '../../contexts/AuthContext.tsx';
 import { useToast } from '../../contexts/ToastContext.tsx';
 import { i18n } from '../../i18n.ts';
+import { getProductImage } from '../../utils/productImage.ts';
 
 const REVIEW_EDIT_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 const isWithinReviewEditWindow = (createdAt?: string) => {
@@ -216,7 +217,7 @@ export const ProductDetailPage: React.FC = () => {
             }}
           >
             <img
-              src={product.image}
+              src={getProductImage(product)}
               alt={product.name}
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />

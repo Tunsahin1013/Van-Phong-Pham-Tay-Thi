@@ -20,6 +20,7 @@ import { printOrderDocument } from '../../utils/printOrder.ts';
 import { useAuth } from '../../contexts/AuthContext.tsx';
 import { useToast } from '../../contexts/ToastContext.tsx';
 import { i18n } from '../../i18n.ts';
+import { getProductImage } from '../../utils/productImage.ts';
 
 export const EmployeeDashboard: React.FC = () => {
   const { currentUser } = useAuth();
@@ -464,7 +465,7 @@ export const EmployeeDashboard: React.FC = () => {
                     <tr key={p.id}>
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <img src={p.image} alt={p.name} style={{ width: 40, height: 40, borderRadius: 6, objectFit: 'cover' }} />
+                          <img src={getProductImage(p)} alt={p.name} style={{ width: 40, height: 40, borderRadius: 6, objectFit: 'cover' }} />
                           <div>
                             <div style={{ fontWeight: 600, color: '#101010' }}>{p.name}</div>
                             <div style={{ fontSize: 11, color: '#5f5e5e' }}>Thương hiệu: {p.brand}</div>

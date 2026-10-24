@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { vouchersAPI } from '../api.ts';
 import { useToast } from './ToastContext.tsx';
+import { getProductImage } from '../utils/productImage.ts';
 
 export interface CartItem {
   productId: string;
@@ -149,7 +150,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
           productId: product.id,
           code: product.code,
           name: product.name,
-          image: product.image,
+          image: getProductImage(product),
           price: product.salePrice || product.price,
           originalPrice: product.price,
           unit: product.unit || 'Cái',

@@ -15,6 +15,7 @@ import { useCart } from '../../contexts/CartContext.tsx';
 import { useAuth } from '../../contexts/AuthContext.tsx';
 import { useToast } from '../../contexts/ToastContext.tsx';
 import { i18n } from '../../i18n.ts';
+import { getProductImage } from '../../utils/productImage.ts';
 
 export const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
@@ -253,7 +254,7 @@ export const CheckoutPage: React.FC = () => {
               {items.map((i) => (
                 <div key={i.productId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, maxWidth: '70%' }}>
-                    <img src={i.image} alt={i.name} style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover' }} />
+                    <img src={getProductImage(i)} alt={i.name} style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover' }} />
                     <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       <span style={{ fontWeight: 600 }}>{i.name}</span>
                       <div style={{ fontSize: 11, color: '#5f5e5e' }}>x {i.quantity} {i.unit}</div>

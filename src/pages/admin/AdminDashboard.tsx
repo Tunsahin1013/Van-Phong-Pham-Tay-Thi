@@ -56,6 +56,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext.tsx';
 import { useToast } from '../../contexts/ToastContext.tsx';
 import { i18n } from '../../i18n.ts';
+import { getProductImage } from '../../utils/productImage.ts';
 import { SystemManagementPanel } from './SystemManagementPanel.tsx';
 import { printOrderDocument } from '../../utils/printOrder.ts';
 
@@ -651,7 +652,7 @@ export const AdminDashboard: React.FC = () => {
                     {dashboardData?.bestSellingProducts?.slice(0, 5).map((p: any) => (
                       <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13, borderBottom: '1px solid #F5F5F3', paddingBottom: 8 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <img src={p.image} alt={p.name} style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover' }} />
+                          <img src={getProductImage(p)} alt={p.name} style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover' }} />
                           <div>
                             <div style={{ fontWeight: 600, color: '#101010' }}>{p.name}</div>
                             <div style={{ fontSize: 11, color: '#5f5e5e' }}>Kho: {p.stock} {p.unit}</div>
@@ -726,7 +727,7 @@ export const AdminDashboard: React.FC = () => {
                         <tr key={p.id}>
                           <td>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                              <img src={p.image} alt={p.name} style={{ width: 40, height: 40, borderRadius: 6, objectFit: 'cover' }} />
+                              <img src={getProductImage(p)} alt={p.name} style={{ width: 40, height: 40, borderRadius: 6, objectFit: 'cover' }} />
                               <div>
                                 <div style={{ fontWeight: 600 }}>{p.name}</div>
                                 <div style={{ fontSize: 11, color: '#5f5e5e' }}>Hãng: {p.brand}</div>

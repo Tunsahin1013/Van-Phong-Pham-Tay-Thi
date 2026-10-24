@@ -15,6 +15,7 @@ import { ordersAPI } from '../../api.ts';
 import { useAuth } from '../../contexts/AuthContext.tsx';
 import { useToast } from '../../contexts/ToastContext.tsx';
 import { i18n } from '../../i18n.ts';
+import { getProductImage } from '../../utils/productImage.ts';
 
 export const OrdersPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -243,7 +244,7 @@ export const OrdersPage: React.FC = () => {
                   {order.items.map((it: any, idx: number) => (
                     <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 14 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <img src={it.image} alt={it.name} style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover' }} />
+                        <img src={getProductImage(it)} alt={it.name} style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover' }} />
                         <div>
                           <div style={{ fontWeight: 600, color: '#101010' }}>{it.name}</div>
                           <div style={{ fontSize: 12, color: '#5f5e5e' }}>
