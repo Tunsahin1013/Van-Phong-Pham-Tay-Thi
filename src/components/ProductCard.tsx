@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Star, ShoppingCart } from 'lucide-react';
 import { useCart } from '../contexts/CartContext.tsx';
 import { i18n } from '../i18n.ts';
+import { getProductImage } from '../utils/productImage.ts';
 
 interface ProductCardProps {
   product: {
@@ -35,7 +36,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   return (
     <div className="product-card">
       <Link to={`/products/${product.id}`} className="product-card-img-wrap">
-        <img src={product.image} alt={product.name} loading="lazy" />
+        <img src={getProductImage(product)} alt={product.name} loading="lazy" />
         {discountPercent > 0 && (
           <span className="product-card-badge">-{discountPercent}%</span>
         )}
