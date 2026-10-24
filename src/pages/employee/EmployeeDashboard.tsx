@@ -15,7 +15,8 @@ import {
   Layers,
   ArrowRight,
 } from 'lucide-react';
-import { ordersAPI, inventoryAPI, productsAPI, chatsAPI } from '../../api.ts';
+import { ordersAPI, inventoryAPI, productsAPI, chatsAPI, suppliersAPI } from '../../api.ts';
+import { printOrderDocument } from '../../utils/printOrder.ts';
 import { useAuth } from '../../contexts/AuthContext.tsx';
 import { useToast } from '../../contexts/ToastContext.tsx';
 import { i18n } from '../../i18n.ts';
@@ -27,6 +28,9 @@ export const EmployeeDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'orders' | 'inventory' | 'chat'>('orders');
   const [orders, setOrders] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
+  const [lowStockProducts, setLowStockProducts] = useState<any[]>([]);
+  const [showLowStockOnly, setShowLowStockOnly] = useState(false);
+  const [suppliers, setSuppliers] = useState<any[]>([]);
   const [conversations, setConversations] = useState<any[]>([]);
   const [activeChat, setActiveChat] = useState<any>(null);
   const [chatMessages, setChatMessages] = useState<any[]>([]);
@@ -44,18 +48,26 @@ export const EmployeeDashboard: React.FC = () => {
   const [showStockInModal, setShowStockInModal] = useState<any>(null);
   const [stockInQty, setStockInQty] = useState(50);
   const [stockInNote, setStockInNote] = useState('');
+  const [stockInSupplierId, setStockInSupplierId] = useState('');
+  const [showStockAdjustModal, setShowStockAdjustModal] = useState<any>(null);
+  const [stockAdjustQty, setStockAdjustQty] = useState(0);
+  const [stockAdjustNote, setStockAdjustNote] = useState('');
 
   const loadAll = async () => {
     try {
       setLoading(true);
-      const [ordRes, prodRes, chatRes] = await Promise.all([
-        ordersAPI.getAll({ limit: 50 }),
-        productsAPI.getAll({ limit: 50 }),
+      const [ordRes, prodRes, lowStockRes, chatRes, supplierRes] = await Promise.all([
+        ordersAPI.getAll({ limit: 100 }),
+        productsAPI.getAll({ limit: 100, status: 'ALL' }),
+        inventoryAPI.getLowStock(),
         chatsAPI.getConversations(),
+        suppliersAPI.getAll(),
       ]);
 
       if (ordRes.success) setOrders(ordRes.data);
       if (prodRes.success) setProducts(prodRes.data);
+      if (lowStockRes.success) setLowStockProducts(lowStockRes.data || []);
+      if (supplierRes.success) setSuppliers(supplierRes.data.filter((supplier: any) => supplier.status === 'ACTIVE'));
       if (chatRes.success) {
         setConversations(chatRes.data);
         if (chatRes.data.length > 0 && !activeChat) {
@@ -97,22 +109,40 @@ export const EmployeeDashboard: React.FC = () => {
   };
 
   const handleStockIn = async () => {
-    if (!showStockInModal || stockInQty <= 0) return;
+    if (!showStockInModal || !Number.isInteger(stockInQty) || stockInQty <= 0) { showToast('Số lượng nhập phải là số nguyên lớn hơn 0.', 'warning'); return; }
+    if (!stockInSupplierId) { showToast('Vui lòng chọn nhà cung cấp để lập phiếu nhập kho.', 'warning'); return; }
     try {
       const res = await inventoryAPI.stockIn({
         productId: showStockInModal.id,
         quantity: stockInQty,
+        supplierId: stockInSupplierId || undefined,
         note: stockInNote || 'Nhân viên nhập hàng bổ sung',
       });
       if (res.success) {
         showToast(`Đã nhập thêm ${stockInQty} ${showStockInModal.unit} thành công!`, 'success');
         setShowStockInModal(null);
         setStockInNote('');
+        setStockInSupplierId('');
         loadAll();
       }
     } catch (err: any) {
       showToast(err.message || 'Lỗi nhập hàng', 'error');
     }
+  };
+
+  const handleStockAdjust = async () => {
+    if (!showStockAdjustModal || !Number.isInteger(stockAdjustQty) || stockAdjustQty === 0) { showToast('Nhập số điều chỉnh nguyên khác 0.', 'warning'); return; }
+    try {
+      const res = await inventoryAPI.stockAdjust({ productId: showStockAdjustModal.id, adjustmentQty: stockAdjustQty, note: stockAdjustNote || 'Kiểm kê/hư hỏng' });
+      if (res.success) { showToast(res.message, 'success'); setShowStockAdjustModal(null); setStockAdjustQty(0); setStockAdjustNote(''); await loadAll(); }
+    } catch (error: any) { showToast(error.message || 'Không thể điều chỉnh tồn kho.', 'error'); }
+  };
+
+  const handleCreateStockOutSlip = async (order: any) => {
+    try {
+      const res = await inventoryAPI.createOrderOutSlip(order.id);
+      if (res.success) { showToast(res.message, 'success'); setSelectedOrder(res.data); printOrderDocument(res.data, 'STOCK_OUT'); await loadAll(); }
+    } catch (error: any) { showToast(error.message || 'Không tạo được phiếu xuất kho.', 'error'); }
   };
 
   const handleSendChatMessage = async (e: React.FormEvent) => {
@@ -136,7 +166,8 @@ export const EmployeeDashboard: React.FC = () => {
   const preparingOrders = orders.filter((o) => o.orderStatus === 'PREPARING' || o.orderStatus === 'CONFIRMED');
   const shippingOrders = orders.filter((o) => o.orderStatus === 'SHIPPING');
   const completedOrders = orders.filter((o) => o.orderStatus === 'COMPLETED');
-  const lowStockProducts = products.filter((p) => p.stock < 50);
+  const lowStockIds = new Set(lowStockProducts.map((product: any) => product.id));
+  const visibleInventoryProducts = showLowStockOnly ? products.filter((product: any) => lowStockIds.has(product.id)) : products;
 
   const filteredOrders = orders.filter((o) => {
     if (orderStatusFilter !== 'ALL' && o.orderStatus !== orderStatusFilter) return false;
@@ -402,11 +433,14 @@ export const EmployeeDashboard: React.FC = () => {
       {/* Tab 2: Inventory & Products View */}
       {activeTab === 'inventory' && (
         <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #E2E3E1', padding: 24 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
             <div>
               <h3 style={{ fontSize: 18, fontWeight: 700, color: '#101010' }}>Danh Sách Tồn Kho & Sản Phẩm</h3>
               <p style={{ fontSize: 13, color: '#5f5e5e' }}>Nhân viên có thể kiểm tra tồn kho và nhập hàng bổ sung khi lượng tồn giảm xuống thấp.</p>
             </div>
+            <button type="button" onClick={() => setShowLowStockOnly((value) => !value)} style={{ padding: '9px 12px', borderRadius: 8, border: '1px solid #FCA5A5', background: showLowStockOnly ? '#D90D24' : '#FFF1F2', color: showLowStockOnly ? '#FFFFFF' : '#BE123C', fontWeight: 700, cursor: 'pointer' }}>
+              {showLowStockOnly ? 'Hiển thị tất cả sản phẩm' : `Chỉ xem sắp hết/hết hàng (${lowStockProducts.length})`}
+            </button>
           </div>
 
           <div className="table-container">
@@ -423,8 +457,9 @@ export const EmployeeDashboard: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {products.map((p) => {
-                  const isLow = p.stock < 50;
+                {visibleInventoryProducts.map((p) => {
+                  const lowStockInfo = lowStockProducts.find((item: any) => item.id === p.id);
+                  const isLow = Boolean(lowStockInfo);
                   return (
                     <tr key={p.id}>
                       <td>
@@ -449,7 +484,7 @@ export const EmployeeDashboard: React.FC = () => {
                             color: isLow ? '#D90D24' : '#059669',
                           }}
                         >
-                          {p.stock} {p.unit} {isLow && '⚠️ Sắp hết'}
+                          {p.stock} {p.unit} {isLow && (lowStockInfo?.isOutOfStock ? '⚠️ Hết hàng' : '⚠️ Sắp hết')}
                         </span>
                       </td>
                       <td>{p.sold || 0}</td>
@@ -472,10 +507,12 @@ export const EmployeeDashboard: React.FC = () => {
                         >
                           <Plus size={14} /> Nhập Hàng
                         </button>
+                        <button type="button" onClick={() => { setShowStockAdjustModal(p); setStockAdjustQty(0); setStockAdjustNote(''); }} style={{ marginTop: 6, padding: '6px 12px', borderRadius: 6, backgroundColor: '#F5F5F3', color: '#202124', border: '1px solid #D1D5DB', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>Điều chỉnh</button>
                       </td>
                     </tr>
                   );
                 })}
+                {visibleInventoryProducts.length === 0 && <tr><td colSpan={7} style={{ textAlign: 'center', padding: 24, color: '#6B7280' }}>Không có sản phẩm phù hợp với bộ lọc.</td></tr>}
               </tbody>
             </table>
           </div>
@@ -628,6 +665,11 @@ export const EmployeeDashboard: React.FC = () => {
                 ))}
               </div>
 
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 18 }}>
+                <button type="button" className="btn-secondary" onClick={() => printOrderDocument(selectedOrder, 'INVOICE')}>In hóa đơn</button>
+                <button type="button" className="btn-secondary" onClick={() => printOrderDocument(selectedOrder, 'DELIVERY')}>In phiếu giao hàng</button>
+                <button type="button" className="btn-primary" onClick={() => handleCreateStockOutSlip(selectedOrder)}>Tạo & in phiếu xuất kho</button>
+              </div>
               {/* Status transition action buttons */}
               <div style={{ borderTop: '1px solid #E2E3E1', paddingTop: 20 }}>
                 <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 12 }}>Chuyển đổi trạng thái xử lý:</div>
@@ -678,6 +720,9 @@ export const EmployeeDashboard: React.FC = () => {
         </div>
       )}
 
+      {/* Stock Adjustment Modal */}
+      {showStockAdjustModal && <div className="modal-overlay" onClick={() => setShowStockAdjustModal(null)}><div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 440 }}><div className="modal-header"><h3 className="modal-title">Điều chỉnh tồn kho</h3><button className="modal-close-btn" onClick={() => setShowStockAdjustModal(null)}>✕</button></div><div className="modal-body"><div style={{ fontWeight: 700, marginBottom: 4 }}>{showStockAdjustModal.name}</div><div style={{ color: '#6B7280', fontSize: 12, marginBottom: 16 }}>Tồn hiện tại: {showStockAdjustModal.stock} {showStockAdjustModal.unit} · Ngưỡng tối thiểu: {showStockAdjustModal.minStock ?? 10}</div><div className="form-group"><label className="form-label">Số lượng chênh lệch (+ nhập thêm, - giảm do hư hỏng/kiểm kê)</label><input type="number" step="1" className="form-control" value={stockAdjustQty} onChange={(e) => setStockAdjustQty(Number(e.target.value))} required /></div><div className="form-group"><label className="form-label">Lý do điều chỉnh</label><input className="form-control" value={stockAdjustNote} onChange={(e) => setStockAdjustNote(e.target.value)} placeholder="Ví dụ: 2 sản phẩm hư hỏng" required /></div></div><div className="modal-footer"><button className="btn-secondary" onClick={() => setShowStockAdjustModal(null)}>Hủy</button><button className="btn-primary" onClick={handleStockAdjust}>Lưu điều chỉnh</button></div></div></div>}
+
       {/* Stock In Modal */}
       {showStockInModal && (
         <div className="modal-overlay" onClick={() => setShowStockInModal(null)}>
@@ -694,6 +739,13 @@ export const EmployeeDashboard: React.FC = () => {
                 </div>
               </div>
 
+              <div className="form-group">
+                <label className="form-label">Nhà cung cấp <span style={{ color: '#D90D24' }}>*</span></label>
+                <select className="form-control" value={stockInSupplierId} onChange={(e) => setStockInSupplierId(e.target.value)} required>
+                  <option value="">Chọn nhà cung cấp</option>
+                  {suppliers.map((supplier: any) => <option key={supplier.id} value={supplier.id}>{supplier.name} ({supplier.code})</option>)}
+                </select>
+              </div>
               <div className="form-group">
                 <label className="form-label">Số lượng nhập thêm ({showStockInModal.unit})</label>
                 <input

@@ -30,24 +30,38 @@ export const OrdersPage: React.FC = () => {
 
   const successCode = searchParams.get('success');
 
-  const fetchOrders = async () => {
+  const fetchOrders = async (showLoader = true) => {
     if (!isAuthenticated) return;
     try {
-      setLoading(true);
+      if (showLoader) setLoading(true);
       const res = await ordersAPI.getMyOrders();
       if (res.success && res.data) {
         setOrders(res.data);
+        setSelectedOrder((previous: any) => previous ? (res.data.find((order: any) => order.id === previous.id) || previous) : null);
       }
     } catch (err) {
       console.error('Failed to fetch orders', err);
     } finally {
-      setLoading(false);
+      if (showLoader) setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchOrders();
+    if (!isAuthenticated) return;
+    const timer = window.setInterval(() => fetchOrders(false), 15000);
+    return () => window.clearInterval(timer);
   }, [isAuthenticated]);
+
+  const handleRequestReturn = async (order: any) => {
+    const reason = window.prompt(`Nhập lý do trả hàng/hoàn tiền cho đơn ${order.orderCode} (ví dụ: sản phẩm lỗi, hư hỏng khi vận chuyển):`);
+    if (reason === null) return;
+    if (reason.trim().length < 8) { showToast('Vui lòng nhập lý do từ 8 ký tự trở lên.', 'warning'); return; }
+    try {
+      const res = await ordersAPI.requestReturn(order.id, reason.trim());
+      if (res.success) { showToast(res.message, 'success'); await fetchOrders(false); }
+    } catch (error: any) { showToast(error.message || 'Không gửi được yêu cầu trả hàng.', 'error'); }
+  };
 
   const handleCancelOrder = async () => {
     if (!showCancelModal) return;
@@ -305,6 +319,8 @@ export const OrdersPage: React.FC = () => {
                         Hủy Đơn
                       </button>
                     )}
+                    {order.returnRequest && <span style={{ fontSize: 12, color: '#7C2D12', background: '#FFEDD5', borderRadius: 8, padding: '6px 8px' }}>Trả hàng: {({ REQUESTED: 'Chờ xử lý', APPROVED: 'Đã chấp thuận', REJECTED: 'Từ chối', RESOLVED: 'Đã xử lý' } as Record<string, string>)[order.returnRequest.status] || order.returnRequest.status}</span>}
+                    {(() => { const completed = new Date(order.completedAt || order.updatedAt || order.createdAt).getTime(); const inWindow = Number.isFinite(completed) && Date.now() - completed <= 7 * 86400000; const pending = ['REQUESTED', 'APPROVED'].includes(order.returnRequest?.status); return order.orderStatus === 'COMPLETED' && inWindow && !pending ? <button type="button" onClick={() => handleRequestReturn(order)} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #FCA5A5', background: '#FFF1F2', color: '#BE123C', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>Yêu cầu trả hàng/hoàn tiền</button> : null; })()}
                   </div>
                 </div>
               </div>
@@ -336,6 +352,14 @@ export const OrdersPage: React.FC = () => {
                 </div>
               </div>
 
+              <div style={{ background: '#FFF1F2', border: '1px solid #FECDD3', borderRadius: 10, padding: 14, marginBottom: 20 }}>
+                <div style={{ fontWeight: 800, marginBottom: 10 }}>Theo dõi trạng thái đơn hàng</div>
+                <div style={{ display: 'grid', gap: 10 }}>
+                  {[...(selectedOrder.trackingEvents || [])].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((event: any, index: number) => <div key={`${event.createdAt}-${index}`} style={{ display: 'grid', gridTemplateColumns: '12px 1fr', gap: 10 }}><span style={{ width: 10, height: 10, borderRadius: 50, background: index === 0 ? '#D90D24' : '#9CA3AF', marginTop: 4 }} /><div><div style={{ fontWeight: 700, fontSize: 13 }}>{i18n.orderStatus[event.status as keyof typeof i18n.orderStatus]?.label || event.status}</div><div style={{ fontSize: 13, color: '#4B5563' }}>{event.message}</div><div style={{ fontSize: 11, color: '#6B7280' }}>{new Date(event.createdAt).toLocaleString('vi-VN')}{event.actor ? ` · ${event.actor}` : ''}</div></div></div>)}
+                </div>
+                <div style={{ fontSize: 11, color: '#6B7280', marginTop: 8 }}>Trạng thái được làm mới tự động khoảng 15 giây một lần khi trang đang mở.</div>
+              </div>
+              {selectedOrder.returnRequest && <div style={{ padding: 12, border: '1px solid #E5E7EB', borderRadius: 8, marginBottom: 18 }}><strong>Yêu cầu trả hàng/hoàn tiền: {selectedOrder.returnRequest.status}</strong><p style={{ margin: '6px 0 0', fontSize: 13 }}>{selectedOrder.returnRequest.reason}</p>{selectedOrder.returnRequest.resolutionNote && <p style={{ margin: '6px 0 0', fontSize: 13, color: '#6B7280' }}>Phản hồi cửa hàng: {selectedOrder.returnRequest.resolutionNote}</p>}</div>}
               <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 12 }}>Danh sách sản phẩm</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
                 {selectedOrder.items.map((i: any, idx: number) => (

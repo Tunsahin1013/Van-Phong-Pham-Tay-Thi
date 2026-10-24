@@ -14,6 +14,8 @@ import {
   NotificationItem,
   ChatConversationItem,
   ChatMessageItem,
+  ShippingAddressItem,
+  ReturnRequestItem,
 } from '../data/seedData.ts';
 
 export interface SystemLogEntry {
@@ -114,6 +116,32 @@ class DataStoreService {
         this.db = { ...getInitialSeedData(), systemLogs: [], storeSettings: { ...DEFAULT_STORE_SETTINGS } };
         this.persist();
       }
+      // Normalize legacy user records without dropping existing profile/address data.
+      this.db.users = this.db.users.map((user) => {
+        if (!Array.isArray(user.addresses)) {
+          user.addresses = user.address?.trim() ? [{
+            id: `addr_legacy_${user.id}`,
+            label: 'Địa chỉ mặc định',
+            recipientName: user.name,
+            phone: user.phone || '',
+            address: user.address,
+            isDefault: true,
+            createdAt: user.updatedAt || user.createdAt || new Date().toISOString(),
+          }] : [];
+        }
+        if (!user.addresses.some((address) => address.isDefault) && user.addresses.length) user.addresses[0].isDefault = true;
+        return user;
+      });
+      this.db.products = this.db.products.map((product) => ({ ...product, minStock: Number.isFinite(product.minStock) ? product.minStock : 10 }));
+      this.db.orders = this.db.orders.map((order) => ({
+        ...order,
+        trackingEvents: Array.isArray(order.trackingEvents) && order.trackingEvents.length ? order.trackingEvents : [{
+          status: order.orderStatus,
+          message: `Đơn hàng đang ở trạng thái ${order.orderStatus}`,
+          createdAt: order.updatedAt || order.createdAt,
+          actor: 'Hệ thống',
+        }],
+      }));
       this.isLoaded = true;
     } catch (err) {
       console.error('Error initializing DataStore, using in-memory seed:', err);
@@ -143,12 +171,23 @@ class DataStoreService {
   }
 
   createUser(user: Omit<UserItem, 'id' | 'createdAt' | 'updatedAt' | 'loyaltyPoints' | 'walletBalance'> & Partial<Pick<UserItem, 'loyaltyPoints'>>): UserItem {
+    const now = new Date().toISOString();
+    const fallbackAddresses: ShippingAddressItem[] = user.address?.trim() ? [{
+      id: `addr_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      label: 'Địa chỉ mặc định',
+      recipientName: user.name,
+      phone: user.phone || '',
+      address: user.address,
+      isDefault: true,
+      createdAt: now,
+    }] : [];
     const newUser: UserItem = {
       id: 'usr_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
       loyaltyPoints: user.loyaltyPoints ?? 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: now,
+      updatedAt: now,
       ...user,
+      addresses: user.addresses?.length ? user.addresses : fallbackAddresses,
     };
     this.db.users.push(newUser);
     this.persist();
@@ -165,6 +204,184 @@ class DataStoreService {
     };
     this.persist();
     return this.db.users[idx];
+  }
+
+  getUserAddresses(userId: string): ShippingAddressItem[] {
+    const user = this.getUserById(userId);
+    if (!user) return [];
+    if (!Array.isArray(user.addresses)) user.addresses = [];
+    return [...user.addresses].sort((a, b) => Number(b.isDefault) - Number(a.isDefault));
+  }
+
+  addUserAddress(userId: string, input: Omit<ShippingAddressItem, 'id' | 'createdAt'>): ShippingAddressItem | null {
+    const user = this.getUserById(userId);
+    if (!user) return null;
+    if (!Array.isArray(user.addresses)) user.addresses = [];
+    const now = new Date().toISOString();
+    const makeDefault = Boolean(input.isDefault) || user.addresses.length === 0;
+    if (makeDefault) user.addresses = user.addresses.map((item) => ({ ...item, isDefault: false }));
+    const address: ShippingAddressItem = {
+      ...input,
+      id: `addr_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      label: input.label.trim() || 'Địa chỉ nhận hàng',
+      recipientName: input.recipientName.trim(),
+      phone: input.phone.trim(),
+      address: input.address.trim(),
+      isDefault: makeDefault,
+      createdAt: now,
+    };
+    user.addresses.push(address);
+    if (address.isDefault) user.address = address.address;
+    user.updatedAt = now;
+    this.persist();
+    return address;
+  }
+
+  updateUserAddress(userId: string, addressId: string, updates: Partial<Omit<ShippingAddressItem, 'id' | 'createdAt'>>): ShippingAddressItem | null {
+    const user = this.getUserById(userId);
+    const address = user?.addresses?.find((item) => item.id === addressId);
+    if (!user || !address) return null;
+    if (updates.isDefault) user.addresses = user.addresses!.map((item) => ({ ...item, isDefault: item.id === addressId }));
+    const target = user.addresses!.find((item) => item.id === addressId)!;
+    Object.assign(target, updates);
+    if (updates.label !== undefined) target.label = updates.label.trim();
+    if (updates.recipientName !== undefined) target.recipientName = updates.recipientName.trim();
+    if (updates.phone !== undefined) target.phone = updates.phone.trim();
+    if (updates.address !== undefined) target.address = updates.address.trim();
+    if (target.isDefault) user.address = target.address;
+    user.updatedAt = new Date().toISOString();
+    this.persist();
+    return target;
+  }
+
+  setDefaultUserAddress(userId: string, addressId: string): ShippingAddressItem | null {
+    const user = this.getUserById(userId);
+    const selected = user?.addresses?.find((item) => item.id === addressId);
+    if (!user || !selected) return null;
+    user.addresses = user.addresses!.map((item) => ({ ...item, isDefault: item.id === addressId }));
+    user.address = selected.address;
+    user.phone = selected.phone;
+    user.updatedAt = new Date().toISOString();
+    this.persist();
+    return selected;
+  }
+
+  deleteUserAddress(userId: string, addressId: string): boolean {
+    const user = this.getUserById(userId);
+    if (!user || !Array.isArray(user.addresses)) return false;
+    const removed = user.addresses.find((item) => item.id === addressId);
+    if (!removed) return false;
+    user.addresses = user.addresses.filter((item) => item.id !== addressId);
+    if (removed.isDefault) {
+      const next = user.addresses[0];
+      if (next) {
+        next.isDefault = true;
+        user.address = next.address;
+        user.phone = next.phone;
+      } else {
+        user.address = '';
+      }
+    }
+    user.updatedAt = new Date().toISOString();
+    this.persist();
+    return true;
+  }
+
+  private notifyStaff(title: string, message: string): void {
+    // Inventory/return alerts are operational data and must not be broadcast to customers.
+    const staff = this.db.users.filter((user) => user.status === 'ACTIVE' && (user.role === 'ADMIN' || user.role === 'EMPLOYEE'));
+    for (const user of staff) {
+      this.createNotification({
+        userId: user.id,
+        title,
+        message,
+        type: 'SYSTEM',
+        link: user.role === 'ADMIN' ? '/admin' : '/employee',
+      });
+    }
+  }
+
+  private notifyAvailabilityTransition(product: ProductItem, previousAvailableStock: number): void {
+    const minimum = Number.isFinite(product.minStock) ? Number(product.minStock) : 10;
+    const currentAvailableStock = this.getAvailableStock(product.id);
+    if (previousAvailableStock > minimum && currentAvailableStock <= minimum) {
+      const isOut = currentAvailableStock <= 0;
+      this.notifyStaff(
+        isOut ? 'Sản phẩm đã hết hàng' : 'Cảnh báo tồn kho thấp',
+        `${product.name} (${product.code}) hiện còn ${currentAvailableStock} ${product.unit} có thể cấp cho đơn hàng; ngưỡng tối thiểu là ${minimum}.`,
+      );
+    }
+  }
+
+  private notifyLowStockTransition(product: ProductItem, previousStock: number): void {
+    const reserved = this.getReservedQuantity(product.id);
+    this.notifyAvailabilityTransition(product, Math.max(0, previousStock - reserved));
+  }
+
+  getReservedQuantity(productId: string, excludingOrderId?: string): number {
+    return this.db.orders.reduce((total, order) => {
+      if (order.id === excludingOrderId || order.inventoryDeductionMode !== 'ON_COMPLETION' || order.stockDeductedAt) return total;
+      if (order.orderStatus === 'CANCELLED' || order.orderStatus === 'COMPLETED') return total;
+      const qty = order.items.filter((item) => item.productId === productId).reduce((sum, item) => sum + item.quantity, 0);
+      return total + qty;
+    }, 0);
+  }
+
+  getAvailableStock(productId: string): number {
+    const product = this.getProductById(productId);
+    if (!product) return 0;
+    return Math.max(0, product.stock - this.getReservedQuantity(productId));
+  }
+
+  getLowStockProducts(threshold?: number): ProductItem[] {
+    return this.db.products.filter((product) => {
+      const minimum = Number.isFinite(product.minStock) ? Number(product.minStock) : (threshold ?? 10);
+      return this.getAvailableStock(product.id) <= minimum;
+    });
+  }
+
+  createStockOutSlip(orderId: string, createdBy: string): OrderItem | null {
+    const order = this.getOrderById(orderId);
+    if (!order) return null;
+    if (!['CONFIRMED', 'PREPARING', 'SHIPPING', 'COMPLETED'].includes(order.orderStatus)) {
+      throw new Error('Chỉ tạo phiếu xuất kho khi đơn đã được xác nhận xử lý.');
+    }
+    if (!order.stockOutSlipCode) order.stockOutSlipCode = `PX-${order.orderCode}`;
+    if (!order.stockOutSlipCreatedAt) order.stockOutSlipCreatedAt = new Date().toISOString();
+    if (!order.stockOutSlipCreatedBy) order.stockOutSlipCreatedBy = createdBy || 'Nhân viên';
+    this.persist();
+    return order;
+  }
+
+  createReturnRequest(orderId: string, customerId: string, reason: string): OrderItem | null {
+    const order = this.getOrderById(orderId);
+    if (!order || order.customerId !== customerId) return null;
+    if (order.orderStatus !== 'COMPLETED') throw new Error('Chỉ có thể yêu cầu trả hàng/hoàn tiền cho đơn đã hoàn thành.');
+    if (order.returnRequest?.status === 'REQUESTED' || order.returnRequest?.status === 'APPROVED') throw new Error('Đơn hàng đã có yêu cầu trả hàng/hoàn tiền đang xử lý.');
+    const completedAt = order.completedAt || order.updatedAt || order.createdAt;
+    const ageDays = (Date.now() - new Date(completedAt).getTime()) / 86400000;
+    if (!Number.isFinite(ageDays) || ageDays > 7) throw new Error('Đã quá thời hạn 7 ngày để gửi yêu cầu trả hàng/hoàn tiền.');
+    const now = new Date().toISOString();
+    order.returnRequest = { status: 'REQUESTED', reason: reason.trim(), requestedAt: now, updatedAt: now };
+    this.notifyStaff('Có yêu cầu trả hàng/hoàn tiền mới', `Đơn hàng ${order.orderCode}: ${reason.trim()}`);
+    this.persist();
+    return order;
+  }
+
+  updateReturnRequest(orderId: string, status: ReturnRequestItem['status'], reviewedBy: string, resolutionNote = ''): OrderItem | null {
+    const order = this.getOrderById(orderId);
+    if (!order?.returnRequest) return null;
+    order.returnRequest = { ...order.returnRequest, status, reviewedBy, resolutionNote, updatedAt: new Date().toISOString() };
+    // This tracks the decision only; it does not simulate a payment-provider refund.
+    this.createNotification({
+      userId: order.customerId,
+      title: 'Cập nhật yêu cầu trả hàng/hoàn tiền',
+      message: `Yêu cầu của đơn ${order.orderCode} đã được cập nhật: ${status}. ${resolutionNote}`.trim(),
+      type: 'ORDER',
+      link: '/orders',
+    });
+    this.persist();
+    return order;
   }
 
   deleteUser(id: string): boolean {
@@ -248,6 +465,9 @@ class DataStoreService {
     }
 
     this.persist();
+    if (newProd.status === 'ACTIVE' && newProd.stock <= (Number.isFinite(newProd.minStock) ? Number(newProd.minStock) : 10)) {
+      this.notifyStaff('Sản phẩm mới có tồn kho thấp', `${newProd.name} (${newProd.code}) được tạo với tồn kho ${newProd.stock}; ngưỡng tối thiểu là ${newProd.minStock ?? 10}.`);
+    }
     return newProd;
   }
 
@@ -383,6 +603,7 @@ class DataStoreService {
   recordStockIn(productId: string, quantity: number, supplierId: string | undefined, note: string, createdBy: string): ProductItem | null {
     const product = this.getProductById(productId);
     if (!product) return null;
+    if (!Number.isInteger(quantity) || quantity <= 0) throw new Error('Số lượng nhập phải là số nguyên lớn hơn 0.');
 
     const previousStock = product.stock;
     const newStock = previousStock + quantity;
@@ -419,9 +640,14 @@ class DataStoreService {
     if (!product) return null;
 
     const previousStock = product.stock;
-    const newStock = Math.max(0, previousStock + adjustmentQty);
+    const newStock = previousStock + adjustmentQty;
+    const reserved = this.getReservedQuantity(productId);
+    if (!Number.isFinite(adjustmentQty) || newStock < 0) throw new Error('Tồn kho không được âm.');
+    if (newStock < reserved) throw new Error(`Không thể giảm tồn dưới ${reserved} sản phẩm đang được giữ cho đơn hàng.`);
+    if (!Number.isInteger(adjustmentQty)) throw new Error('Số lượng điều chỉnh phải là số nguyên.');
     product.stock = newStock;
     product.updatedAt = new Date().toISOString();
+    this.notifyLowStockTransition(product, previousStock);
 
     this.createInventoryLog({
       productId: product.id,
@@ -462,35 +688,24 @@ class DataStoreService {
     // Calculate points earned: 1 point per 10,000 VND
     const pointsEarned = Math.floor(orderData.total / 10000);
 
+    const createdAt = new Date().toISOString();
     const newOrder: OrderItem = {
       id: 'ord_' + Date.now(),
       orderCode,
       pointsEarned,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt,
+      updatedAt: createdAt,
+      inventoryDeductionMode: 'ON_COMPLETION',
+      trackingEvents: [{ status: 'PENDING', message: 'Đơn hàng đã được tạo và đang chờ xác nhận.', createdAt, actor: 'Hệ thống' }],
       ...orderData,
     };
 
-    // Deduct stock for all items
+    // New orders reserve available quantity at placement; actual stock is deducted
+    // exactly once when the order is marked COMPLETED. This prevents overselling.
+    const previousAvailableByProduct = new Map<string, number>();
     for (const item of newOrder.items) {
-      const prod = this.getProductById(item.productId);
-      if (prod) {
-        const prevStock = prod.stock;
-        prod.stock = Math.max(0, prod.stock - item.quantity);
-        prod.sold = (prod.sold || 0) + item.quantity;
-        prod.updatedAt = new Date().toISOString();
-
-        this.createInventoryLog({
-          productId: prod.id,
-          productName: prod.name,
-          productCode: prod.code,
-          type: 'OUT',
-          quantity: item.quantity,
-          previousStock: prevStock,
-          newStock: prod.stock,
-          note: `Xuất kho xử lý đơn hàng ${orderCode}`,
-          createdBy: 'Hệ thống tự động',
-        });
+      if (!previousAvailableByProduct.has(item.productId)) {
+        previousAvailableByProduct.set(item.productId, this.getAvailableStock(item.productId));
       }
     }
 
@@ -503,6 +718,10 @@ class DataStoreService {
     }
 
     this.db.orders.unshift(newOrder);
+    for (const [productId, previousAvailable] of previousAvailableByProduct) {
+      const product = this.getProductById(productId);
+      if (product) this.notifyAvailabilityTransition(product, previousAvailable);
+    }
 
     // Create notification for customer
     this.createNotification({
@@ -521,27 +740,75 @@ class DataStoreService {
     orderId: string,
     orderStatus: OrderItem['orderStatus'],
     paymentStatus?: OrderItem['paymentStatus'],
-    cancelReason?: string
+    cancelReason?: string,
+    actor = 'Hệ thống',
   ): OrderItem | null {
     const order = this.getOrderById(orderId);
     if (!order) return null;
 
     const prevStatus = order.orderStatus;
+    if (orderStatus === 'COMPLETED' && prevStatus !== 'COMPLETED' && order.inventoryDeductionMode === 'ON_COMPLETION' && !order.stockDeductedAt) {
+      const demand = new Map<string, number>();
+      for (const item of order.items) demand.set(item.productId, (demand.get(item.productId) || 0) + item.quantity);
+      for (const [productId, quantity] of demand) {
+        const product = this.getProductById(productId);
+        if (!product || product.stock < quantity) throw new Error(`Không đủ tồn kho thực tế để hoàn tất đơn ${order.orderCode}: ${product?.name || productId}.`);
+      }
+    }
     order.orderStatus = orderStatus;
     order.updatedAt = new Date().toISOString();
+    if (!Array.isArray(order.trackingEvents)) order.trackingEvents = [];
+    if (prevStatus !== orderStatus) {
+      const messages: Record<string, string> = {
+        CONFIRMED: 'Đơn hàng đã được xác nhận.',
+        PREPARING: 'Nhân viên đang chuẩn bị và đóng gói đơn hàng.',
+        SHIPPING: 'Đơn hàng đã được bàn giao cho đơn vị vận chuyển.',
+        COMPLETED: 'Đơn hàng đã giao thành công.',
+        CANCELLED: 'Đơn hàng đã bị hủy.',
+      };
+      order.trackingEvents.push({ status: orderStatus, message: messages[orderStatus] || `Trạng thái đơn hàng: ${orderStatus}`, createdAt: order.updatedAt, actor });
+    }
 
     if (paymentStatus) {
       order.paymentStatus = paymentStatus;
     }
 
-    if (orderStatus === 'COMPLETED') {
+    if (orderStatus === 'COMPLETED' && prevStatus !== 'COMPLETED') {
       order.completedAt = new Date().toISOString();
       order.paymentStatus = 'PAID';
 
-      // Award loyalty points to customer
+      // Complete-time stock deduction for orders created with the new reservation model.
+      // Old orders without inventoryDeductionMode keep their historical stock behavior.
+      if (order.inventoryDeductionMode === 'ON_COMPLETION' && !order.stockDeductedAt) {
+        const deductions = order.items.map((item) => ({ item, product: this.getProductById(item.productId)! }));
+        for (const { item, product } of deductions) {
+          const previousStock = product.stock;
+          product.stock -= item.quantity;
+          product.sold = (product.sold || 0) + item.quantity;
+          product.updatedAt = new Date().toISOString();
+          this.createInventoryLog({
+            productId: product.id,
+            productName: product.name,
+            productCode: product.code,
+            type: 'OUT',
+            quantity: item.quantity,
+            previousStock,
+            newStock: product.stock,
+            note: `Xuất kho theo đơn ${order.orderCode}`,
+            createdBy: 'Hệ thống tự động',
+            orderId: order.id,
+            documentCode: order.stockOutSlipCode || `PX-${order.orderCode}`,
+          });
+        }
+        order.stockDeductedAt = order.completedAt;
+        order.stockOutSlipCode = order.stockOutSlipCode || `PX-${order.orderCode}`;
+      }
+
+      // Award loyalty points once only.
       const customer = this.getUserById(order.customerId);
-      if (customer && order.pointsEarned > 0) {
+      if (customer && order.pointsEarned > 0 && !order.loyaltyPointsAwardedAt) {
         customer.loyaltyPoints = (customer.loyaltyPoints || 0) + order.pointsEarned;
+        order.loyaltyPointsAwardedAt = order.completedAt;
       }
 
       this.createNotification({
@@ -557,28 +824,34 @@ class DataStoreService {
       order.cancelledAt = new Date().toISOString();
       order.cancelReason = cancelReason || 'Đơn hàng bị hủy';
 
-      // Restore product stock if not previously cancelled
+      // Cancellation releases reservations. Restore physical stock only for legacy orders
+      // that deducted at creation, or for a completed order whose stock was deducted.
       if (prevStatus !== 'CANCELLED') {
-        for (const item of order.items) {
-          const prod = this.getProductById(item.productId);
-          if (prod) {
-            const prevStock = prod.stock;
-            prod.stock += item.quantity;
-            prod.sold = Math.max(0, (prod.sold || 0) - item.quantity);
-            prod.updatedAt = new Date().toISOString();
-
-            this.createInventoryLog({
-              productId: prod.id,
-              productName: prod.name,
-              productCode: prod.code,
-              type: 'IN',
-              quantity: item.quantity,
-              previousStock: prevStock,
-              newStock: prod.stock,
-              note: `Hoàn kho do hủy đơn hàng ${order.orderCode}`,
-              createdBy: 'Hệ thống tự động',
-            });
+        const shouldRestoreStock = order.inventoryDeductionMode !== 'ON_COMPLETION' || Boolean(order.stockDeductedAt);
+        if (shouldRestoreStock) {
+          for (const item of order.items) {
+            const prod = this.getProductById(item.productId);
+            if (prod) {
+              const prevStock = prod.stock;
+              prod.stock += item.quantity;
+              prod.sold = Math.max(0, (prod.sold || 0) - item.quantity);
+              prod.updatedAt = new Date().toISOString();
+              this.createInventoryLog({
+                productId: prod.id,
+                productName: prod.name,
+                productCode: prod.code,
+                type: 'IN',
+                quantity: item.quantity,
+                previousStock: prevStock,
+                newStock: prod.stock,
+                note: `Hoàn kho do hủy đơn hàng ${order.orderCode}`,
+                createdBy: 'Hệ thống tự động',
+                orderId: order.id,
+                documentCode: order.stockOutSlipCode,
+              });
+            }
           }
+          delete order.stockDeductedAt;
         }
       }
 
@@ -748,7 +1021,13 @@ class DataStoreService {
   // --- NOTIFICATIONS ---
   getNotifications(userId: string): NotificationItem[] {
     return this.db.notifications
-      .filter(n => n.userId === userId || n.userId === 'ALL')
+      .filter((notification) => notification.userId === userId || notification.userId === 'ALL')
+      .map((notification) => {
+        if (notification.userId !== 'ALL') return { ...notification, readBy: undefined };
+        const copy = { ...notification, isRead: Array.isArray(notification.readBy) ? notification.readBy.includes(userId) : Boolean(notification.isRead) };
+        delete copy.readBy;
+        return copy;
+      })
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }
 
@@ -764,18 +1043,26 @@ class DataStoreService {
     return newNotif;
   }
 
-  markNotificationAsRead(id: string): boolean {
-    const notif = this.db.notifications.find(n => n.id === id);
-    if (!notif) return false;
-    notif.isRead = true;
+  markNotificationAsRead(id: string, userId: string): boolean {
+    const notif = this.db.notifications.find((notification) => notification.id === id);
+    if (!notif || (notif.userId !== userId && notif.userId !== 'ALL')) return false;
+    if (notif.userId === 'ALL') {
+      if (!Array.isArray(notif.readBy)) notif.readBy = [];
+      if (!notif.readBy.includes(userId)) notif.readBy.push(userId);
+    } else {
+      notif.isRead = true;
+    }
     this.persist();
     return true;
   }
 
   markAllNotificationsAsRead(userId: string): boolean {
-    this.db.notifications.forEach(n => {
-      if (n.userId === userId || n.userId === 'ALL') {
-        n.isRead = true;
+    this.db.notifications.forEach((notification) => {
+      if (notification.userId === userId) {
+        notification.isRead = true;
+      } else if (notification.userId === 'ALL') {
+        if (!Array.isArray(notification.readBy)) notification.readBy = [];
+        if (!notification.readBy.includes(userId)) notification.readBy.push(userId);
       }
     });
     this.persist();
@@ -916,7 +1203,7 @@ class DataStoreService {
 
     const customers = this.db.users.filter(u => u.role === 'CUSTOMER');
     const employees = this.db.users.filter(u => u.role === 'EMPLOYEE');
-    const lowStockProducts = this.db.products.filter(p => p.stock < 50);
+    const lowStockProducts = this.getLowStockProducts();
 
     // Best sellers
     const bestSellingProducts = [...this.db.products]

@@ -51,15 +51,23 @@ export const authAPI = {
   getMe: () => request<{ success: boolean; user: any }>('/auth/me'),
   logout: () => request<{ success: boolean }>('/auth/logout', { method: 'POST' }),
   forgotPassword: (email: string) =>
-    request<{ success: boolean; message: string }>('/auth/forgot-password', {
+    request<{ success: boolean; message: string; resetLink?: string }>('/auth/forgot-password', {
       method: 'POST',
       body: JSON.stringify({ email }),
     }),
+  resetPassword: (data: { token: string; newPassword: string }) =>
+    request<{ success: boolean; message: string }>('/auth/reset-password', { method: 'POST', body: JSON.stringify(data) }),
   changePassword: (data: { currentPassword: string; newPassword: string }) =>
     request<{ success: boolean; message: string }>('/auth/change-password', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+  getAddresses: () => request<{ success: boolean; data: any[] }>('/auth/addresses'),
+  addAddress: (data: { label: string; recipientName: string; phone: string; address: string; isDefault?: boolean }) =>
+    request<{ success: boolean; message: string; data: any }>('/auth/addresses', { method: 'POST', body: JSON.stringify(data) }),
+  updateAddress: (id: string, data: any) => request<{ success: boolean; message: string; data: any }>(`/auth/addresses/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  setDefaultAddress: (id: string) => request<{ success: boolean; message: string; data: any }>(`/auth/addresses/${id}/default`, { method: 'PATCH' }),
+  deleteAddress: (id: string) => request<{ success: boolean; message: string }>(`/auth/addresses/${id}`, { method: 'DELETE' }),
   updateProfile: (data: any) =>
     request<{ success: boolean; message: string; user: any }>('/auth/profile', {
       method: 'PUT',
@@ -86,6 +94,7 @@ export const productsAPI = {
       method: 'PUT',
       body: JSON.stringify(data),
     }),
+  setStatus: (id: string, status: 'ACTIVE' | 'INACTIVE') => request<{ success: boolean; message: string; data: any }>(`/products/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
   delete: (id: string) =>
     request<{ success: boolean; message: string }>(`/products/${id}`, {
       method: 'DELETE',
@@ -133,6 +142,8 @@ export const ordersAPI = {
       method: 'POST',
       body: JSON.stringify({ reason }),
     }),
+  requestReturn: (id: string, reason: string) => request<{ success: boolean; message: string; data: any }>(`/orders/${id}/return-request`, { method: 'POST', body: JSON.stringify({ reason }) }),
+  updateReturnRequest: (id: string, data: { status: 'APPROVED' | 'REJECTED' | 'RESOLVED'; resolutionNote?: string }) => request<{ success: boolean; message: string; data: any }>(`/orders/${id}/return-request`, { method: 'PUT', body: JSON.stringify(data) }),
 };
 
 export const cartAPI = {
@@ -210,6 +221,7 @@ export const inventoryAPI = {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+  createOrderOutSlip: (orderId: string) => request<{ success: boolean; message: string; data: any }>(`/inventory/out/${orderId}`, { method: 'POST' }),
 };
 
 export const loyaltyAPI = {

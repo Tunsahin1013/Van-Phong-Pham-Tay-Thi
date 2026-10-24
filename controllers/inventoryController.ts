@@ -14,8 +14,15 @@ export const inventoryController = {
     try {
       const { productId, quantity, supplierId, note } = req.body;
 
-      if (!productId || !quantity || Number(quantity) <= 0) {
+      if (!productId || !Number.isInteger(Number(quantity)) || Number(quantity) <= 0) {
         return res.status(400).json({ success: false, message: 'Vui lòng chọn sản phẩm và nhập số lượng nhập hợp lệ' });
+      }
+      if (typeof supplierId !== 'string' || !supplierId.trim()) {
+        return res.status(400).json({ success: false, message: 'Vui lòng chọn nhà cung cấp để lập phiếu nhập kho.' });
+      }
+      const supplier = dataStore.getSupplierById(supplierId);
+      if (!supplier || supplier.status !== 'ACTIVE') {
+        return res.status(400).json({ success: false, message: 'Nhà cung cấp không tồn tại hoặc đã ngừng hoạt động.' });
       }
 
       const creator = req.user ? req.user.name : 'Nhân viên';
@@ -40,7 +47,7 @@ export const inventoryController = {
     try {
       const { productId, adjustmentQty, note } = req.body;
 
-      if (!productId || adjustmentQty === undefined) {
+      if (!productId || adjustmentQty === undefined || !Number.isInteger(Number(adjustmentQty))) {
         return res.status(400).json({ success: false, message: 'Vui lòng cung cấp sản phẩm và số lượng điều chỉnh' });
       }
 
@@ -61,9 +68,20 @@ export const inventoryController = {
     }
   },
 
+  // POST /api/inventory/out/:orderId — create dispatch slip without double-deducting stock.
+  createOrderOutSlip: (req: AuthRequest, res: Response) => {
+    try {
+      const order = dataStore.createStockOutSlip(req.params.orderId, req.user?.name || 'Nhân viên');
+      if (!order) return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng.' });
+      return res.json({ success: true, message: `Đã tạo phiếu xuất kho ${order.stockOutSlipCode}. Tồn kho sẽ được trừ một lần khi đơn hoàn thành.`, data: order });
+    } catch (error) {
+      return res.status(400).json({ success: false, message: (error as Error).message });
+    }
+  },
+
   // GET /api/inventory/low-stock
   getLowStock: (_req: AuthRequest, res: Response) => {
-    const list = dataStore.getProducts().filter(p => p.stock < 50);
+    const list = dataStore.getLowStockProducts().map((product) => ({ ...product, availableStock: dataStore.getAvailableStock(product.id), isOutOfStock: dataStore.getAvailableStock(product.id) <= 0 }));
     return res.json({ success: true, data: list });
   },
 };

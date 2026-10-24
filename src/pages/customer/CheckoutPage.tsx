@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   ShieldCheck,
@@ -10,7 +10,7 @@ import {
   ArrowRight,
   Package,
 } from 'lucide-react';
-import { ordersAPI } from '../../api.ts';
+import { authAPI, ordersAPI } from '../../api.ts';
 import { useCart } from '../../contexts/CartContext.tsx';
 import { useAuth } from '../../contexts/AuthContext.tsx';
 import { useToast } from '../../contexts/ToastContext.tsx';
@@ -28,6 +28,25 @@ export const CheckoutPage: React.FC = () => {
   const [note, setNote] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'COD' | 'BANKING'>('COD');
   const [loading, setLoading] = useState(false);
+  const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState('');
+
+  useEffect(() => {
+    let active = true;
+    authAPI.getAddresses().then((res) => {
+      if (!active || !res.success) return;
+      const rows = Array.isArray(res.data) ? res.data : [];
+      setSavedAddresses(rows);
+      const preferred = rows.find((address: any) => address.isDefault) || rows[0];
+      if (preferred) {
+        setSelectedAddressId(preferred.id);
+        setCustomerName(preferred.recipientName || currentUser?.name || '');
+        setCustomerPhone(preferred.phone || currentUser?.phone || '');
+        setShippingAddress(preferred.address || currentUser?.address || '');
+      }
+    }).catch(() => { /* Keep editable fields for legacy profiles. */ });
+    return () => { active = false; };
+  }, [currentUser?.id]);
 
   // If cart is empty, redirect
   if (items.length === 0) {
@@ -97,6 +116,18 @@ export const CheckoutPage: React.FC = () => {
                 <span>Thông Tin Nhận Hàng</span>
               </div>
 
+              {savedAddresses.length > 0 && <div className="form-group">
+                <label className="form-label">Chọn địa chỉ đã lưu</label>
+                <select className="form-control" value={selectedAddressId} onChange={(e) => {
+                  const id = e.target.value; setSelectedAddressId(id);
+                  const address = savedAddresses.find((item: any) => item.id === id);
+                  if (address) { setCustomerName(address.recipientName || ''); setCustomerPhone(address.phone || ''); setShippingAddress(address.address || ''); }
+                }}>
+                  <option value="">Nhập địa chỉ khác</option>
+                  {savedAddresses.map((address: any) => <option key={address.id} value={address.id}>{address.label}{address.isDefault ? ' (Mặc định)' : ''} — {address.address}</option>)}
+                </select>
+                <div style={{ fontSize: 12, marginTop: 5 }}><Link to="/account" style={{ color: '#D90D24' }}>Quản lý sổ địa chỉ</Link></div>
+              </div>}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <div className="form-group">
                   <label className="form-label">Họ và tên người nhận *</label>

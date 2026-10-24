@@ -10,5 +10,7 @@ router.get('/', authenticateToken, authorizeRole(['ADMIN', 'EMPLOYEE']), orderCo
 router.get('/:id', authenticateToken, orderController.getOrderById);
 router.put('/:id/status', authenticateToken, authorizeRole(['ADMIN', 'EMPLOYEE']), orderController.updateOrderStatus);
 router.post('/:id/cancel', authenticateToken, orderController.cancelOrder);
+router.post('/:id/return-request', authenticateToken, orderController.requestReturn);
+router.put('/:id/return-request', authenticateToken, authorizeRole(['ADMIN', 'EMPLOYEE']), orderController.updateReturnRequest);
 
 export default router;

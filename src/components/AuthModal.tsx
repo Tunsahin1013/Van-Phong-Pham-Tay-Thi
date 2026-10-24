@@ -23,6 +23,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultTa
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
+  const [resetLink, setResetLink] = useState('');
 
   if (!isOpen) return null;
 
@@ -58,8 +59,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultTa
     try {
       const res = await authAPI.forgotPassword(email);
       showToast(res.message, 'success');
-      setTab('login');
-      setPassword('123456');
+      setResetLink(res.resetLink || '');
+      if (!res.resetLink) setTab('login');
     } catch (err: any) {
       showToast(err.message, 'error');
     } finally {
@@ -143,7 +144,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultTa
                   <label className="form-label" style={{ marginBottom: 0 }}>Mật khẩu</label>
                   <button
                     type="button"
-                    onClick={() => setTab('forgot')}
+                    onClick={() => { setResetLink(''); setTab('forgot'); }}
                     style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: 12, cursor: 'pointer' }}
                   >
                     Quên mật khẩu?
@@ -256,7 +257,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultTa
                 <KeyRound size={36} color="var(--primary)" style={{ margin: '0 auto 8px' }} />
                 <h4 style={{ fontSize: 16, fontWeight: 700, color: '#101010' }}>Khôi phục mật khẩu</h4>
                 <p style={{ fontSize: 13, color: '#5f5e5e' }}>
-                  Nhập email đăng ký của bạn. Hệ thống sẽ cấp lại mật khẩu mặc định (123456).
+                  Nhập email đăng ký. Hệ thống sẽ gửi liên kết đặt mật khẩu mới có hiệu lực trong 15 phút.
                 </p>
               </div>
 
@@ -273,8 +274,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultTa
               </div>
 
               <button type="submit" className="btn-primary" style={{ width: '100%' }} disabled={loading}>
-                {loading ? 'Đang gửi...' : 'Gửi Yêu Cầu Cấp Lại'}
+                {loading ? 'Đang gửi...' : 'Gửi liên kết khôi phục'}
               </button>
+              {resetLink && <div style={{ marginTop: 14, padding: 12, background: '#fff7ed', borderRadius: 8, fontSize: 13 }}><strong>Liên kết kiểm thử local:</strong><br/><a href={resetLink} style={{ color: '#D90D24', wordBreak: 'break-all' }}>{resetLink}</a><p style={{ marginTop: 6, color: '#6B7280' }}>Chỉ hiện khi chạy môi trường development. Production cần cấu hình gửi email.</p></div>}
 
               <button
                 type="button"
