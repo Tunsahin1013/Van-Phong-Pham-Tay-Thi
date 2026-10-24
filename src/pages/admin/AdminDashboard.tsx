@@ -72,6 +72,38 @@ type AdminTab =
   | 'notifications'
   | 'system';
 
+type VoucherFormState = {
+  code: string;
+  name: string;
+  type: 'PERCENTAGE' | 'FIXED';
+  value: number;
+  minimumOrder: number;
+  maximumDiscount: number;
+  startDate: string;
+  endDate: string;
+  usageLimit: number;
+  status: 'ACTIVE' | 'INACTIVE';
+};
+
+const toDateTimeLocal = (value: string | Date): string => {
+  const date = new Date(value);
+  const offset = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+};
+
+const createEmptyVoucherForm = (): VoucherFormState => ({
+  code: '',
+  name: '',
+  type: 'PERCENTAGE',
+  value: 10,
+  minimumOrder: 0,
+  maximumDiscount: 0,
+  startDate: toDateTimeLocal(new Date()),
+  endDate: toDateTimeLocal(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)),
+  usageLimit: 100,
+  status: 'ACTIVE',
+});
+
 export const AdminDashboard: React.FC = () => {
   const { currentUser } = useAuth();
   const { showToast } = useToast();
@@ -100,6 +132,8 @@ export const AdminDashboard: React.FC = () => {
   const [showProductModal, setShowProductModal] = useState<any>(null); // null = closed, {} = add, obj = edit
   const [showCategoryModal, setShowCategoryModal] = useState<any>(null);
   const [showVoucherModal, setShowVoucherModal] = useState<any>(null);
+  const [voucherForm, setVoucherForm] = useState<VoucherFormState>(() => createEmptyVoucherForm());
+  const [savingVoucher, setSavingVoucher] = useState(false);
   const [showSupplierModal, setShowSupplierModal] = useState<any>(null);
   const [showUserModal, setShowUserModal] = useState<any>(null);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
@@ -198,6 +232,95 @@ export const AdminDashboard: React.FC = () => {
       }
     } catch (err: any) {
       showToast(err.message || 'Lỗi xóa sản phẩm', 'error');
+    }
+  };
+
+  // Handlers for vouchers (US39/US40)
+  const openVoucherModal = (voucher?: any) => {
+    if (voucher) {
+      setVoucherForm({
+        code: voucher.code || '',
+        name: voucher.name || '',
+        type: voucher.type === 'FIXED' ? 'FIXED' : 'PERCENTAGE',
+        value: Number(voucher.value) || 0,
+        minimumOrder: Number(voucher.minimumOrder) || 0,
+        maximumDiscount: Number(voucher.maximumDiscount) || 0,
+        startDate: toDateTimeLocal(voucher.startDate || new Date()),
+        endDate: toDateTimeLocal(voucher.endDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)),
+        usageLimit: Number(voucher.usageLimit) || 0,
+        status: voucher.status === 'INACTIVE' ? 'INACTIVE' : 'ACTIVE',
+      });
+      setShowVoucherModal({ id: voucher.id });
+    } else {
+      setVoucherForm(createEmptyVoucherForm());
+      setShowVoucherModal({});
+    }
+  };
+
+  const handleSaveVoucher = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!voucherForm.code.trim() || !voucherForm.name.trim()) {
+      showToast('Vui lòng nhập mã và tên voucher', 'warning');
+      return;
+    }
+    if (!Number.isFinite(Number(voucherForm.value)) || Number(voucherForm.value) <= 0 || (voucherForm.type === 'PERCENTAGE' && Number(voucherForm.value) > 100)) {
+      showToast('Giá trị giảm không hợp lệ', 'warning');
+      return;
+    }
+    if (Number(voucherForm.minimumOrder) < 0 || Number(voucherForm.maximumDiscount) < 0 || Number(voucherForm.usageLimit) < 0) {
+      showToast('Điều kiện voucher không được âm', 'warning');
+      return;
+    }
+    const start = new Date(voucherForm.startDate);
+    const end = new Date(voucherForm.endDate);
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end <= start) {
+      showToast('Ngày kết thúc phải sau ngày bắt đầu', 'warning');
+      return;
+    }
+    const editingVoucher = showVoucherModal?.id ? vouchers.find((item) => item.id === showVoucherModal.id) : null;
+    if (editingVoucher && Number(voucherForm.usageLimit) > 0 && Number(voucherForm.usageLimit) < Number(editingVoucher.usedCount || 0)) {
+      showToast('Lượt sử dụng không được nhỏ hơn số lượt đã dùng', 'warning');
+      return;
+    }
+
+    const payload = {
+      ...voucherForm,
+      code: voucherForm.code.trim().toUpperCase(),
+      name: voucherForm.name.trim(),
+      value: Number(voucherForm.value),
+      minimumOrder: Number(voucherForm.minimumOrder),
+      maximumDiscount: Number(voucherForm.maximumDiscount),
+      usageLimit: Number(voucherForm.usageLimit),
+      startDate: start.toISOString(),
+      endDate: end.toISOString(),
+    };
+    setSavingVoucher(true);
+    try {
+      const result = editingVoucher
+        ? await vouchersAPI.update(editingVoucher.id, payload)
+        : await vouchersAPI.create(payload);
+      if (result.success) {
+        showToast(editingVoucher ? 'Cập nhật voucher thành công' : 'Tạo voucher thành công; khách hàng đã được thông báo', 'success');
+        setShowVoucherModal(null);
+        await loadData();
+      }
+    } catch (error: any) {
+      showToast(error.message || 'Không thể lưu voucher', 'error');
+    } finally {
+      setSavingVoucher(false);
+    }
+  };
+
+  const handleDeleteVoucher = async (voucher: any) => {
+    if (!confirm(`Bạn có chắc muốn xóa voucher ${voucher.code}?`)) return;
+    try {
+      const result = await vouchersAPI.delete(voucher.id);
+      if (result.success) {
+        showToast('Đã xóa voucher', 'success');
+        await loadData();
+      }
+    } catch (error: any) {
+      showToast(error.message || 'Không thể xóa voucher', 'error');
     }
   };
 
@@ -971,8 +1094,14 @@ export const AdminDashboard: React.FC = () => {
           {/* TAB 7: VOUCHERS */}
           {activeTab === 'vouchers' && (
             <div style={{ backgroundColor: '#ffffff', borderRadius: 16, border: '1px solid #E2E3E1', padding: 24 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                <h3 style={{ fontSize: 18, fontWeight: 700 }}>Danh Sách Mã Khuyến Mãi & Giảm Giá ({vouchers.length})</h3>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 20 }}>
+                <div>
+                  <h3 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>Danh Sách Mã Khuyến Mãi & Giảm Giá ({vouchers.length})</h3>
+                  <p style={{ fontSize: 12, color: '#777B80', margin: '6px 0 0' }}>Thiết lập loại giảm, đơn tối thiểu, mức giảm tối đa, thời hạn và lượt sử dụng. Khách hàng sẽ nhận thông báo khi có voucher mới hoặc voucher sắp hết hạn.</p>
+                </div>
+                <button className="btn-primary" onClick={() => openVoucherModal()} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, whiteSpace: 'nowrap' }}>
+                  <Plus size={16} /> Tạo voucher
+                </button>
               </div>
 
               <div className="table-container">
@@ -984,24 +1113,44 @@ export const AdminDashboard: React.FC = () => {
                       <th>Loại giảm</th>
                       <th>Giá trị</th>
                       <th>Đơn tối thiểu</th>
+                      <th>Giảm tối đa</th>
                       <th>Lượt đã dùng</th>
-                      <th>Hạn sử dụng</th>
+                      <th>Thời hạn</th>
+                      <th>Trạng thái</th>
+                      <th>Thao tác</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {vouchers.map((v) => (
-                      <tr key={v.id}>
-                        <td><strong style={{ color: 'var(--primary)' }}>{v.code}</strong></td>
-                        <td style={{ fontWeight: 600 }}>{v.name}</td>
-                        <td>{v.type === 'PERCENTAGE' ? 'Theo %' : 'Cố định (VND)'}</td>
-                        <td>
-                          <strong>{v.type === 'PERCENTAGE' ? `${v.value}%` : i18n.currency(v.value)}</strong>
-                        </td>
-                        <td>{i18n.currency(v.minimumOrder)}</td>
-                        <td>{v.usedCount} / {v.usageLimit}</td>
-                        <td style={{ fontSize: 12, color: '#5f5e5e' }}>{i18n.formatDate(v.endDate)}</td>
-                      </tr>
-                    ))}
+                    {vouchers.map((v) => {
+                      const isExpired = new Date(v.endDate).getTime() < Date.now();
+                      const isUpcoming = new Date(v.startDate).getTime() > Date.now();
+                      const exhausted = Number(v.usageLimit) > 0 && Number(v.usedCount) >= Number(v.usageLimit);
+                      const statusText = v.status !== 'ACTIVE' ? 'Tạm khóa' : isExpired ? 'Hết hạn' : isUpcoming ? 'Sắp diễn ra' : exhausted ? 'Hết lượt' : 'Đang hoạt động';
+                      const statusColor = v.status !== 'ACTIVE' || isExpired || exhausted ? '#6B7280' : isUpcoming ? '#B45309' : '#047857';
+                      return (
+                        <tr key={v.id}>
+                          <td><strong style={{ color: 'var(--primary)' }}>{v.code}</strong></td>
+                          <td style={{ fontWeight: 600 }}>{v.name}</td>
+                          <td>{v.type === 'PERCENTAGE' ? 'Theo %' : 'Cố định (VND)'}</td>
+                          <td><strong>{v.type === 'PERCENTAGE' ? `${v.value}%` : i18n.currency(v.value)}</strong></td>
+                          <td>{i18n.currency(v.minimumOrder)}</td>
+                          <td>{v.type === 'PERCENTAGE' && v.maximumDiscount > 0 ? i18n.currency(v.maximumDiscount) : '—'}</td>
+                          <td>{v.usedCount} / {Number(v.usageLimit) > 0 ? v.usageLimit : '∞'}</td>
+                          <td style={{ fontSize: 12, color: '#5f5e5e' }}>
+                            <div>{i18n.formatDate(v.startDate)}</div>
+                            <div>đến {i18n.formatDate(v.endDate)}</div>
+                          </td>
+                          <td><span style={{ display: 'inline-block', padding: '4px 8px', borderRadius: 6, background: `${statusColor}18`, color: statusColor, fontWeight: 700, fontSize: 11 }}>{statusText}</span></td>
+                          <td>
+                            <div style={{ display: 'flex', gap: 6 }}>
+                              <button className="btn-secondary" title="Sửa voucher" aria-label={`Sửa voucher ${v.code}`} onClick={() => openVoucherModal(v)} style={{ padding: '6px 8px' }}><Edit size={14} /></button>
+                              <button className="btn-secondary" title="Xóa voucher" aria-label={`Xóa voucher ${v.code}`} onClick={() => handleDeleteVoucher(v)} style={{ padding: '6px 8px', color: '#D90D24' }}><Trash2 size={14} /></button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {vouchers.length === 0 && <tr><td colSpan={10} style={{ textAlign: 'center', padding: 24, color: '#777B80' }}>Chưa có voucher. Nhấn “Tạo voucher” để bắt đầu.</td></tr>}
                   </tbody>
                 </table>
               </div>
@@ -1258,6 +1407,85 @@ export const AdminDashboard: React.FC = () => {
           )}
         </main>
       </div>
+
+      {/* Create/Edit Voucher Modal - US39 / US40 */}
+      {showVoucherModal && (
+        <div className="modal-overlay" onClick={() => setShowVoucherModal(null)}>
+          <div className="modal-content" onClick={(event) => event.stopPropagation()} style={{ maxWidth: 760 }}>
+            <div className="modal-header">
+              <h3 className="modal-title">{showVoucherModal.id ? 'Cập nhật voucher' : 'Tạo voucher khuyến mãi'}</h3>
+              <button className="modal-close-btn" type="button" onClick={() => setShowVoucherModal(null)}>✕</button>
+            </div>
+            <form onSubmit={handleSaveVoucher}>
+              <div className="modal-body" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                  <div className="form-group">
+                    <label className="form-label">Mã voucher *</label>
+                    <input className="form-control" required maxLength={40} pattern="[A-Za-z0-9_-]+" title="Chỉ dùng chữ, số, gạch ngang hoặc gạch dưới" placeholder="VD: TAYTHI20" value={voucherForm.code} onChange={(e) => setVoucherForm({ ...voucherForm, code: e.target.value.toUpperCase() })} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Tên chương trình *</label>
+                    <input className="form-control" required maxLength={120} placeholder="VD: Ưu đãi khách hàng mới" value={voucherForm.name} onChange={(e) => setVoucherForm({ ...voucherForm, name: e.target.value })} />
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                  <div className="form-group">
+                    <label className="form-label">Loại giảm giá *</label>
+                    <select className="form-control" value={voucherForm.type} onChange={(e) => setVoucherForm({ ...voucherForm, type: e.target.value as VoucherFormState['type'] })}>
+                      <option value="PERCENTAGE">Theo phần trăm (%)</option>
+                      <option value="FIXED">Số tiền cố định (VND)</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">{voucherForm.type === 'PERCENTAGE' ? 'Phần trăm giảm (1–100) *' : 'Số tiền giảm (VND) *'}</label>
+                    <input className="form-control" type="number" required min="0.01" max={voucherForm.type === 'PERCENTAGE' ? 100 : undefined} step="any" value={voucherForm.value} onChange={(e) => setVoucherForm({ ...voucherForm, value: Number(e.target.value) })} />
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                  <div className="form-group">
+                    <label className="form-label">Đơn hàng tối thiểu (VND)</label>
+                    <input className="form-control" type="number" min="0" step="1000" value={voucherForm.minimumOrder} onChange={(e) => setVoucherForm({ ...voucherForm, minimumOrder: Number(e.target.value) })} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Giảm tối đa (VND, 0 = không giới hạn)</label>
+                    <input className="form-control" type="number" min="0" step="1000" disabled={voucherForm.type === 'FIXED'} value={voucherForm.maximumDiscount} onChange={(e) => setVoucherForm({ ...voucherForm, maximumDiscount: Number(e.target.value) })} />
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                  <div className="form-group">
+                    <label className="form-label">Bắt đầu sử dụng *</label>
+                    <input className="form-control" type="datetime-local" required value={voucherForm.startDate} onChange={(e) => setVoucherForm({ ...voucherForm, startDate: e.target.value })} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Kết thúc *</label>
+                    <input className="form-control" type="datetime-local" required min={voucherForm.startDate} value={voucherForm.endDate} onChange={(e) => setVoucherForm({ ...voucherForm, endDate: e.target.value })} />
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                  <div className="form-group">
+                    <label className="form-label">Tổng lượt sử dụng (0 = không giới hạn)</label>
+                    <input className="form-control" type="number" min="0" step="1" value={voucherForm.usageLimit} onChange={(e) => setVoucherForm({ ...voucherForm, usageLimit: Number(e.target.value) })} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Trạng thái</label>
+                    <select className="form-control" value={voucherForm.status} onChange={(e) => setVoucherForm({ ...voucherForm, status: e.target.value as VoucherFormState['status'] })}>
+                      <option value="ACTIVE">Hoạt động</option>
+                      <option value="INACTIVE">Tạm khóa</option>
+                    </select>
+                  </div>
+                </div>
+                <div style={{ padding: 12, borderRadius: 8, background: '#FFF0F1', color: '#8C1420', fontSize: 12, lineHeight: 1.6 }}>
+                  Voucher hợp lệ khi đang hoạt động, nằm trong thời hạn và chưa vượt lượt dùng. Khi tạo voucher mới, hệ thống phát thông báo cho khách hàng; thông báo sắp hết hạn được phát một lần trong vòng 3 ngày trước hạn.
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button className="btn-secondary" type="button" onClick={() => setShowVoucherModal(null)} disabled={savingVoucher}>Hủy</button>
+                <button className="btn-primary" type="submit" disabled={savingVoucher}>{savingVoucher ? 'Đang lưu…' : showVoucherModal.id ? 'Lưu thay đổi' : 'Tạo voucher & thông báo khách hàng'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Edit/Add Product Modal */}
       {showProductModal && (

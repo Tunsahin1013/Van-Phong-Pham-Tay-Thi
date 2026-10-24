@@ -131,6 +131,8 @@ export interface VoucherItem {
   usedCount: number;
   status: 'ACTIVE' | 'INACTIVE';
   createdAt: string;
+  /** Timestamp of the one-time near-expiry notification sent to customers. */
+  expiryNoticeSentAt?: string;
 }
 
 export interface ReviewItem {
