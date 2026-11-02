@@ -1,30 +1,33 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+
 dotenv.config();
 
-let isMongoConnected = false;
+let connectionPromise: Promise<void> | null = null;
 
-export async function connectDB(): Promise<boolean> {
-  const uri = process.env.MONGODB_URI;
+export async function connectDB(): Promise<void> {
+  if (mongoose.connection.readyState === 1) return;
+  if (mongoose.connection.readyState === 0 || mongoose.connection.readyState === 3) {
+    connectionPromise = null;
+  }
+
+  const uri = process.env.MONGODB_URI?.trim();
   if (!uri) {
-    console.log('ℹ️ No MONGODB_URI found. Stationery Shop is running smoothly on JSON Data Store fallback (Canteen-Goo architecture).');
-    return false;
+    throw new Error('Thiếu MONGODB_URI. Tây Thi yêu cầu MongoDB Atlas và không hỗ trợ lưu dữ liệu bằng JSON.');
   }
 
-  try {
-    await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 5000,
+  if (!connectionPromise) {
+    connectionPromise = mongoose.connect(uri, {
+      serverSelectionTimeoutMS: 10000,
+      autoIndex: true,
+    }).then(() => {
+      console.log(`Đã kết nối MongoDB Atlas: ${mongoose.connection.name}`);
+    }).catch((error) => {
+      connectionPromise = null;
+      throw new Error(`Không thể kết nối MongoDB Atlas: ${(error as Error).message}`);
     });
-    isMongoConnected = true;
-    console.log('✅ Connected to MongoDB Atlas successfully!');
-    return true;
-  } catch (error) {
-    console.warn('⚠️ MongoDB connection failed. Falling back to persistent JSON Data Store:', (error as Error).message);
-    isMongoConnected = false;
-    return false;
   }
+
+  await connectionPromise;
 }
 
-export function isMongoDB(): boolean {
-  return isMongoConnected;
-}

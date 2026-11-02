@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
-import { vouchersAPI } from '../api.ts';
+import React, { createContext, useContext, useState, useEffect, useMemo, useRef } from 'react';
+import { cartAPI, vouchersAPI } from '../api.ts';
 import { useToast } from './ToastContext.tsx';
 import { getProductImage } from '../utils/productImage.ts';
 
@@ -40,48 +40,61 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-const CART_STORAGE_KEY = 'stationery_cart_items';
-const VOUCHER_STORAGE_KEY = 'stationery_applied_voucher';
+const CART_SESSION_KEY = 'stationery_cart_session_id';
+
+function getCartSessionId(): string {
+  try {
+    let sessionId = localStorage.getItem(CART_SESSION_KEY);
+    if (!sessionId) {
+      sessionId = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : `cart_${Date.now()}_${Math.random().toString(36).slice(2, 14)}`;
+      localStorage.setItem(CART_SESSION_KEY, sessionId);
+    }
+    // Remove the old browser-stored cart payload; MongoDB now stores cart contents.
+    localStorage.removeItem('stationery_cart_items');
+    localStorage.removeItem('stationery_applied_voucher');
+    return sessionId;
+  } catch {
+    return `cart_${Date.now()}_${Math.random().toString(36).slice(2, 14)}`;
+  }
+}
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { showToast } = useToast();
-  const [items, setItems] = useState<CartItem[]>(() => {
-    try {
-      const saved = localStorage.getItem(CART_STORAGE_KEY);
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [sessionId] = useState<string>(() => getCartSessionId());
+  const [items, setItems] = useState<CartItem[]>([]);
+  const [appliedVoucher, setAppliedVoucher] = useState<AppliedVoucher | null>(null);
+  const [cartLoaded, setCartLoaded] = useState(false);
+  const saveQueue = useRef<Promise<void>>(Promise.resolve());
 
-  const [appliedVoucher, setAppliedVoucher] = useState<AppliedVoucher | null>(() => {
-    try {
-      const saved = localStorage.getItem(VOUCHER_STORAGE_KEY);
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
-  });
-
+  // Restore the guest cart from MongoDB; the browser stores only an opaque session ID.
   useEffect(() => {
-    try {
-      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
-    } catch (err) {
-      console.error('Failed to save cart to localStorage', err);
-    }
-  }, [items]);
+    let active = true;
+    cartAPI.getCart(sessionId)
+      .then((response) => {
+        if (!active) return;
+        setItems(Array.isArray(response.data?.items) ? response.data.items : []);
+        setAppliedVoucher(response.data?.appliedVoucher || null);
+      })
+      .catch((error) => {
+        console.error('Không thể tải giỏ hàng từ MongoDB:', error);
+      })
+      .finally(() => {
+        if (active) setCartLoaded(true);
+      });
+    return () => { active = false; };
+  }, [sessionId]);
 
+  // Serialize writes so rapid cart changes cannot arrive out of order.
   useEffect(() => {
-    try {
-      if (appliedVoucher) {
-        localStorage.setItem(VOUCHER_STORAGE_KEY, JSON.stringify(appliedVoucher));
-      } else {
-        localStorage.removeItem(VOUCHER_STORAGE_KEY);
-      }
-    } catch (err) {
-      console.error('Failed to save voucher to localStorage', err);
-    }
-  }, [appliedVoucher]);
+    if (!cartLoaded) return;
+    const snapshot = { items, appliedVoucher };
+    saveQueue.current = saveQueue.current
+      .catch(() => undefined)
+      .then(() => cartAPI.saveCart(sessionId, snapshot).then(() => undefined))
+      .catch((error) => console.error('Không thể đồng bộ giỏ hàng lên MongoDB:', error));
+  }, [items, appliedVoucher, cartLoaded, sessionId]);
 
   const itemCount = useMemo(() => {
     return items.reduce((sum, item) => sum + item.quantity, 0);

@@ -31,8 +31,10 @@ Tên hệ thống: **Tây Thi Stationery**
 - **CORS** & **dotenv**
 
 ### Cơ Sở Dữ Liệu (Database):
-- **MongoDB Atlas** (Mongoose ORM)
-- **Cơ chế JSON Data Store Fallback** (Kế thừa từ kiến trúc Canteen-Goo): Khi không cấu hình chuỗi kết nối MongoDB Atlas, hệ thống tự động khởi tạo và lưu trữ liên tục vào `data/db.json` với đầy đủ tính năng CRUD, bảo đảm chạy độc lập 100% không bao giờ bị gián đoạn hay thiếu kết nối!
+- **MongoDB Atlas là cơ sở dữ liệu bắt buộc và duy nhất** cho dữ liệu nghiệp vụ.
+- DataStore giữ cache trong bộ nhớ để tương thích với các controller hiện tại; mọi thay đổi được commit vào MongoDB trước khi API trả kết quả.
+- Dữ liệu được đồng bộ vào các collection `users`, `categories`, `products`, `orders`, `vouchers`, `suppliers`, `reviews`, `inventories`, `wallettransactions`, `notifications`, `conversations`, `chatmessages`, `cart_sessions`, `system_activity_logs`, `system_store_settings` và snapshot `application_state`.
+- Nếu MongoDB không có kết nối hoặc ghi dữ liệu thất bại, API trả lỗi `503`; hệ thống **không chuyển sang JSON hoặc bộ nhớ seed**.
 
 ---
 
@@ -60,8 +62,8 @@ Các biến môi trường:
 
 ```env
 PORT=3000
-MONGODB_URI="" # Để trống để chạy chế độ JSON Fallback siêu tốc, hoặc nhập URI MongoDB Atlas
-JWT_SECRET="stationery_shop_super_secret_jwt_key_2026"
+MONGODB_URI="mongodb+srv://<user>:<password>@<cluster>.mongodb.net/taythi?retryWrites=true&w=majority" # Bắt buộc
+JWT_SECRET="REPLACE_WITH_A_LONG_RANDOM_SECRET"
 ```
 
 ---
@@ -168,7 +170,7 @@ npm start
 ```text
 stationery-shop/
 ├── config/
-│   └── db.ts                 # Kết nối MongoDB Atlas và Fallback engine
+│   └── db.ts                 # Kết nối MongoDB Atlas bắt buộc
 ├── controllers/
 │   ├── authController.ts
 │   ├── productController.ts
@@ -185,8 +187,8 @@ stationery-shop/
 │   ├── supplierController.ts
 │   └── userController.ts
 ├── data/
-│   ├── db.json               # Dữ liệu fallback tự động lưu trữ
-│   └── seedData.ts           # Dữ liệu mẫu phong phú (30+ sản phẩm, 10 danh mục, đơn hàng...)
+│   ├── db.legacy.backup      # Snapshot JSON cũ, chỉ dùng migration lần đầu
+│   └── seedData.ts           # Dữ liệu khởi tạo khi collection MongoDB chưa có dữ liệu
 ├── middleware/
 │   └── auth.ts               # JWT verification & Role-based Authorization
 ├── models/
@@ -240,9 +242,12 @@ This integrated source layers the following work onto the repository's cached `o
 - Revenue dashboard uses a dropdown for daily, monthly, and yearly real order revenue.
 - US72 inventory tables are compact, scrollable boards that can be dragged to swap their positions in the dashboard section.
 
-### Environment and local data safety
+### MongoDB Atlas bắt buộc và migration dữ liệu cũ
 
-- Copy your private `.env` from your existing local project into the root of this project. Do not commit it.
-- `data/db.json` is intentionally omitted from this archive because a local JSON snapshot may contain personal data and password hashes. Keep your own backup; the data store initializes seed data when no local snapshot is present.
-- The app may fall back to JSON storage when MongoDB Atlas is unavailable. Confirm the server log says the database connection succeeded before changing production data.
-- The archive excludes `.git`, `node_modules`, `dist`, `.env`, `.files.env`, and `data/db.json`. Use `APPLY_CLEAN_REBUILD.ps1` to apply this source into a fresh Git clone while preserving its `.git`, your local `.env`, any existing `data/db.json`, and installed dependencies.
+- Tạo file `.env` từ `.env.example` và điền `MONGODB_URI` của MongoDB Atlas cùng `JWT_SECRET`.
+- Ứng dụng không có JSON fallback. Nếu MongoDB không kết nối hoặc không ghi được, API dừng với HTTP 503.
+- Khi `application_state` chưa tồn tại, lần khởi động đầu tiên sẽ hợp nhất dữ liệu hiện có trong các collection MongoDB với snapshot cũ `data/db.legacy.backup` (MongoDB được ưu tiên khi trùng ID), sau đó ghi dữ liệu vào Atlas.
+- Sau lần migration đầu tiên, `data/db.legacy.backup` chỉ còn là bản lưu trữ; ứng dụng không đọc nó ở các lần khởi động tiếp theo.
+- Có thể chạy migration chủ động bằng `npm run migrate:mongo`. Không đưa `.env` hoặc thông tin kết nối thật lên GitHub.
+- Collection `application_state` là snapshot nhất quán để khôi phục cache; các collection nghiệp vụ riêng được đồng bộ để truy vấn và kiểm tra trực tiếp trên MongoDB Atlas.
+- Giỏ hàng được lưu trong collection `cart_sessions`; trình duyệt chỉ giữ mã phiên ngẫu nhiên. Token đăng nhập vẫn được giữ ở trình duyệt để xác thực API.

@@ -147,6 +147,13 @@ export const ordersAPI = {
 };
 
 export const cartAPI = {
+  getCart: (sessionId: string) =>
+    request<{ success: boolean; data: { items: any[]; appliedVoucher: any | null } }>(`/cart/${encodeURIComponent(sessionId)}`),
+  saveCart: (sessionId: string, data: { items: any[]; appliedVoucher: any | null }) =>
+    request<{ success: boolean; message: string; data: { items: any[]; appliedVoucher: any | null } }>(`/cart/${encodeURIComponent(sessionId)}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
   validateCart: (items: any[]) =>
     request<{ success: boolean; data: { items: any[]; subtotal: number; shippingFee: number; total: number; errors: string[] } }>('/cart/validate', {
       method: 'POST',
