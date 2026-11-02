@@ -11,3 +11,4 @@ coverage/
 data/db.json
 data/db.*.json
 *.backup.json
+data/db.legacy.backup

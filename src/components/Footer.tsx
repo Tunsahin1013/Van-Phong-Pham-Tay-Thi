@@ -137,7 +137,7 @@ export const Footer: React.FC = () => {
             <span>•</span>
             <span>REST API & Express</span>
             <span>•</span>
-            <span>MongoDB / JSON Fallback</span>
+            <span>MongoDB Atlas</span>
           </div>
         </div>
       </div>

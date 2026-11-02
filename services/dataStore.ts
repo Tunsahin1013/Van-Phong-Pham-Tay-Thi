@@ -1,5 +1,3 @@
-import fs from 'fs';
-import path from 'path';
 import {
   getInitialSeedData,
   UserItem,
@@ -53,7 +51,7 @@ export const DEFAULT_STORE_SETTINGS: StoreSettings = {
   updatedBy: 'Hệ thống',
 };
 
-interface DatabaseSchema {
+export interface DatabaseSchema {
   users: UserItem[];
   categories: CategoryItem[];
   products: ProductItem[];
@@ -70,90 +68,136 @@ interface DatabaseSchema {
   storeSettings: StoreSettings;
 }
 
-const DB_FILE_PATH = path.resolve(process.cwd(), 'data', 'db.json');
-
 class DataStoreService {
   private db: DatabaseSchema;
-  private isLoaded: boolean = false;
+  private persistenceHandler?: (snapshot: DatabaseSchema) => Promise<void>;
+  private dirty = false;
+  private revision = 0;
+  private flushing?: Promise<void>;
+  private persistenceError: Error | null = null;
 
   constructor() {
-    this.db = { ...getInitialSeedData(), systemLogs: [], storeSettings: { ...DEFAULT_STORE_SETTINGS } };
-    this.init();
+    this.db = {
+      ...getInitialSeedData(),
+      systemLogs: [],
+      storeSettings: { ...DEFAULT_STORE_SETTINGS },
+    };
+    this.normalizeData();
   }
 
-  private init() {
-    try {
-      const dataDir = path.dirname(DB_FILE_PATH);
-      if (!fs.existsSync(dataDir)) {
-        fs.mkdirSync(dataDir, { recursive: true });
+  private normalizeData() {
+    this.db.users = this.db.users.map((user) => {
+      if (!Array.isArray(user.addresses)) {
+        user.addresses = user.address?.trim() ? [{
+          id: `addr_legacy_${user.id}`,
+          label: 'Địa chỉ mặc định',
+          recipientName: user.name,
+          phone: user.phone || '',
+          address: user.address,
+          isDefault: true,
+          createdAt: user.updatedAt || user.createdAt || new Date().toISOString(),
+        }] : [];
       }
-
-      if (fs.existsSync(DB_FILE_PATH)) {
-        const raw = fs.readFileSync(DB_FILE_PATH, 'utf-8');
-        const parsed = JSON.parse(raw);
-        // Merge with seed in case fields are missing
-        const seed = getInitialSeedData();
-        this.db = {
-          users: parsed.users?.length ? parsed.users : seed.users,
-          categories: parsed.categories?.length ? parsed.categories : seed.categories,
-          products: parsed.products?.length ? parsed.products : seed.products,
-          vouchers: parsed.vouchers?.length ? parsed.vouchers : seed.vouchers,
-          suppliers: parsed.suppliers?.length ? parsed.suppliers : seed.suppliers,
-          orders: parsed.orders?.length ? parsed.orders : seed.orders,
-          reviews: parsed.reviews?.length ? parsed.reviews : seed.reviews,
-          inventoryLogs: parsed.inventoryLogs?.length ? parsed.inventoryLogs : seed.inventoryLogs,
-          walletTransactions: Array.isArray(parsed.walletTransactions) ? parsed.walletTransactions : seed.walletTransactions,
-          notifications: parsed.notifications?.length ? parsed.notifications : seed.notifications,
-          conversations: parsed.conversations?.length ? parsed.conversations : seed.conversations,
-          chatMessages: parsed.chatMessages?.length ? parsed.chatMessages : seed.chatMessages,
-          systemLogs: Array.isArray(parsed.systemLogs) ? parsed.systemLogs : [],
-          storeSettings: {
-            ...DEFAULT_STORE_SETTINGS,
-            ...(parsed.storeSettings && typeof parsed.storeSettings === 'object' ? parsed.storeSettings : {}),
-          },
-        };
-      } else {
-        this.db = { ...getInitialSeedData(), systemLogs: [], storeSettings: { ...DEFAULT_STORE_SETTINGS } };
-        this.persist();
+      if (!user.addresses.some((address) => address.isDefault) && user.addresses.length) {
+        user.addresses[0].isDefault = true;
       }
-      // Normalize legacy user records without dropping existing profile/address data.
-      this.db.users = this.db.users.map((user) => {
-        if (!Array.isArray(user.addresses)) {
-          user.addresses = user.address?.trim() ? [{
-            id: `addr_legacy_${user.id}`,
-            label: 'Địa chỉ mặc định',
-            recipientName: user.name,
-            phone: user.phone || '',
-            address: user.address,
-            isDefault: true,
-            createdAt: user.updatedAt || user.createdAt || new Date().toISOString(),
-          }] : [];
-        }
-        if (!user.addresses.some((address) => address.isDefault) && user.addresses.length) user.addresses[0].isDefault = true;
-        return user;
-      });
-      this.db.products = this.db.products.map((product) => ({ ...product, minStock: Number.isFinite(product.minStock) ? product.minStock : 10 }));
-      this.db.orders = this.db.orders.map((order) => ({
-        ...order,
-        trackingEvents: Array.isArray(order.trackingEvents) && order.trackingEvents.length ? order.trackingEvents : [{
-          status: order.orderStatus,
-          message: `Đơn hàng đang ở trạng thái ${order.orderStatus}`,
-          createdAt: order.updatedAt || order.createdAt,
-          actor: 'Hệ thống',
-        }],
-      }));
-      this.isLoaded = true;
-    } catch (err) {
-      console.error('Error initializing DataStore, using in-memory seed:', err);
-      this.db = { ...getInitialSeedData(), systemLogs: [], storeSettings: { ...DEFAULT_STORE_SETTINGS } };
-    }
+      return user;
+    });
+    this.db.products = this.db.products.map((product) => ({
+      ...product,
+      minStock: Number.isFinite(product.minStock) ? product.minStock : 10,
+    }));
+    this.db.orders = this.db.orders.map((order) => ({
+      ...order,
+      trackingEvents: Array.isArray(order.trackingEvents) && order.trackingEvents.length
+        ? order.trackingEvents
+        : [{
+            status: order.orderStatus,
+            message: `Đơn hàng đang ở trạng thái ${order.orderStatus}`,
+            createdAt: order.updatedAt || order.createdAt,
+            actor: 'Hệ thống',
+          }],
+    }));
   }
 
+  /** Replace the runtime cache with data loaded from MongoDB during startup. */
+  loadSnapshot(snapshot: Partial<DatabaseSchema>) {
+    const seed = getInitialSeedData();
+    this.db = {
+      users: Array.isArray(snapshot.users) ? snapshot.users : seed.users,
+      categories: Array.isArray(snapshot.categories) ? snapshot.categories : seed.categories,
+      products: Array.isArray(snapshot.products) ? snapshot.products : seed.products,
+      vouchers: Array.isArray(snapshot.vouchers) ? snapshot.vouchers : seed.vouchers,
+      suppliers: Array.isArray(snapshot.suppliers) ? snapshot.suppliers : seed.suppliers,
+      orders: Array.isArray(snapshot.orders) ? snapshot.orders : seed.orders,
+      reviews: Array.isArray(snapshot.reviews) ? snapshot.reviews : seed.reviews,
+      inventoryLogs: Array.isArray(snapshot.inventoryLogs) ? snapshot.inventoryLogs : seed.inventoryLogs,
+      walletTransactions: Array.isArray(snapshot.walletTransactions) ? snapshot.walletTransactions : seed.walletTransactions,
+      notifications: Array.isArray(snapshot.notifications) ? snapshot.notifications : seed.notifications,
+      conversations: Array.isArray(snapshot.conversations) ? snapshot.conversations : seed.conversations,
+      chatMessages: Array.isArray(snapshot.chatMessages) ? snapshot.chatMessages : seed.chatMessages,
+      systemLogs: Array.isArray(snapshot.systemLogs) ? snapshot.systemLogs : [],
+      storeSettings: { ...DEFAULT_STORE_SETTINGS, ...(snapshot.storeSettings || {}) },
+    };
+    this.normalizeData();
+    this.dirty = false;
+    this.persistenceError = null;
+  }
+
+  setPersistenceHandler(handler: (snapshot: DatabaseSchema) => Promise<void>) {
+    this.persistenceHandler = handler;
+  }
+
+  getBackupSnapshot(): DatabaseSchema {
+    return JSON.parse(JSON.stringify(this.db)) as DatabaseSchema;
+  }
+
+  hasPendingChanges(): boolean {
+    return this.dirty;
+  }
+
+  /** Persist every mutation to MongoDB; the API response waits for flush(). */
   private persist() {
+    this.dirty = true;
+    this.revision += 1;
+    this.persistenceError = null;
+  }
+
+  async flush(): Promise<void> {
+    if (!this.dirty) {
+      if (this.persistenceError) throw this.persistenceError;
+      return;
+    }
+    if (!this.persistenceHandler) {
+      throw new Error('MongoDB chưa được khởi tạo; không thể lưu dữ liệu nghiệp vụ.');
+    }
+    if (this.flushing) {
+      await this.flushing;
+      if (this.dirty) return this.flush();
+      return;
+    }
+
+    this.flushing = (async () => {
+      while (this.dirty) {
+        const revision = this.revision;
+        const snapshot = this.getBackupSnapshot();
+        try {
+          await this.persistenceHandler!(snapshot);
+          if (this.revision === revision) this.dirty = false;
+          this.persistenceError = null;
+        } catch (error) {
+          this.persistenceError = this.dirty
+            ? (error instanceof Error ? error : new Error(String(error)))
+            : null;
+          throw error;
+        }
+      }
+    })();
+
     try {
-      fs.writeFileSync(DB_FILE_PATH, JSON.stringify(this.db, null, 2), 'utf-8');
-    } catch (err) {
-      console.error('Failed to write db.json:', err);
+      await this.flushing;
+    } finally {
+      this.flushing = undefined;
     }
   }
 
@@ -1148,11 +1192,6 @@ class DataStoreService {
   }
 
   // --- SYSTEM ADMINISTRATION ---
-  getBackupSnapshot(): DatabaseSchema {
-    // Return detached data so a downloader cannot mutate the live in-memory store.
-    return JSON.parse(JSON.stringify(this.db)) as DatabaseSchema;
-  }
-
   getSystemLogs(limit = 100): SystemLogEntry[] {
     const safeLimit = Math.max(1, Math.min(500, Math.floor(limit) || 100));
     return [...this.db.systemLogs]

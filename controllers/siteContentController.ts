@@ -5,12 +5,18 @@ import { defaultSiteContent } from '../data/siteContentDefaults.ts';
 export const siteContentController = {
   async get(req: Request, res: Response) {
     try {
-      const content = await SiteContentModel.findOne({ key: 'main' }).lean();
-      return res.json({ success: true, data: content || defaultSiteContent });
+      const content = await SiteContentModel.findOneAndUpdate(
+        { key: 'main' },
+        { $setOnInsert: defaultSiteContent },
+        { new: true, upsert: true, setDefaultsOnInsert: true },
+      ).lean();
+      return res.json({ success: true, data: content });
     } catch (error) {
       console.error('Unable to load site content:', error);
-      // Keep the storefront usable if the database is temporarily unavailable.
-      return res.json({ success: true, data: defaultSiteContent, source: 'fallback' });
+      return res.status(503).json({
+        success: false,
+        message: 'Không thể đọc nội dung website từ MongoDB Atlas. Vui lòng kiểm tra kết nối database.',
+      });
     }
   },
 

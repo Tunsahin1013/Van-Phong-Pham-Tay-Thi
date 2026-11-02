@@ -4,7 +4,9 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import apiRouter from './routes/index.ts';
-import { connectDB, isMongoDB } from './config/db.ts';
+import { connectDB } from './config/db.ts';
+import { initializeMongoDataStore } from './services/mongoDataStorePersistence.ts';
+import { requireMongo } from './middleware/requireMongo.ts';
 import { SiteContentModel } from './models/SiteContent.ts';
 import { defaultSiteContent } from './data/siteContentDefaults.ts';
 import { systemAuditMiddleware } from './middleware/systemAudit.ts';
@@ -22,6 +24,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Audit API mutations/failures without saving request bodies, passwords, or tokens.
+app.use('/api', requireMongo);
 app.use('/api', systemAuditMiddleware);
 app.use('/api', apiRouter);
 
@@ -30,20 +33,15 @@ app.get('/health', (_req, res) => {
 });
 
 async function startServer() {
-  const mongoConnected = await connectDB();
-  if (mongoConnected && isMongoDB()) {
-    try {
-      // Seed defaults once; never overwrite customized MongoDB site content.
-      await SiteContentModel.updateOne(
-        { key: 'main' },
-        { $setOnInsert: defaultSiteContent },
-        { upsert: true },
-      );
-      console.log('Website content is ready in MongoDB (sitecontents).');
-    } catch (error) {
-      console.warn('Could not initialize website content:', (error as Error).message);
-    }
-  }
+  await connectDB();
+  await initializeMongoDataStore();
+  // Seed defaults once; never overwrite customized MongoDB site content.
+  await SiteContentModel.updateOne(
+    { key: 'main' },
+    { $setOnInsert: defaultSiteContent },
+    { upsert: true },
+  );
+  console.log('Website content is ready in MongoDB (sitecontents).');
 
   if (!isProduction) {
     const { createServer: createViteServer } = await import('vite');

@@ -29,7 +29,7 @@
 - Checkout no longer offers wallet payment; legacy wallet fields remain only for compatibility with historical data.
 
 ## Safety / environment
-- No `.env`, `.files.env`, `.git`, `node_modules`, `dist`, or `data/db.json` in this archive.
+- No `.env`, `.files.env`, `.git`, `node_modules`, or `dist` in this archive. Legacy data is retained separately as `data/db.legacy.backup` for one-time MongoDB migration.
 - The apply script preserves the user's local `.env`, `.git`, node_modules and existing JSON snapshot.
 
 ## Epic 7 – Đánh giá sản phẩm (US44, US45)

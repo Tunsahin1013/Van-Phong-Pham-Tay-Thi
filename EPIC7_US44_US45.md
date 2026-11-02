@@ -37,4 +37,4 @@
 
 ## Lưu ý về persistence
 
-Các hàm review hiện dùng `DataStoreService`. Trong source này, DataStore ghi dữ liệu lõi vào `data/db.json`; nếu môi trường production đang dùng JSON fallback trên Vercel, các thay đổi có thể không bền vững qua redeploy. Cần đảm bảo cơ chế persistence thật đang bật trước khi đưa dữ liệu người dùng thật vào production.
+Các hàm review tiếp tục gọi `DataStoreService` để giữ nguyên nghiệp vụ. DataStore đã được nối với bộ persistence MongoDB Atlas: thay đổi review được commit vào collection `reviews` và snapshot `application_state` trước khi API trả kết quả. Không còn JSON fallback.

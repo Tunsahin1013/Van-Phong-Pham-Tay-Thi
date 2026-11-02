@@ -45,6 +45,6 @@
 - `npm run lint` (`tsc --noEmit`): **thành công** sau khi tích hợp.
 - `npm run build`: **chưa xác minh được** trong môi trường tạo gói. Vite bị chặn thực thi script trong môi trường này; khi gọi trực tiếp JS thì thiếu native binding Rolldown của Linux. Chạy lại trên Windows bằng `npm run build` trước khi push/merge.
 
-## Giới hạn lưu trữ cần biết
+## Lưu trữ dữ liệu
 
-Các controller nghiệp vụ người dùng, sản phẩm, đơn hàng, đánh giá, voucher và kho trong source hiện vẫn dùng `DataStoreService` lưu vào `data/db.json`. Kết nối MongoDB Atlas hiện được dùng rõ ràng cho nội dung website và một số chức năng quản trị/persistence; đặt `MONGODB_URI` đúng **không tự động chuyển toàn bộ nghiệp vụ sang MongoDB**. Không dùng file JSON local làm nguồn dữ liệu production bền vững trên Vercel nếu chưa hoàn thiện migration sang MongoDB cho các model nghiệp vụ.
+DataStore hiện giữ cache trong bộ nhớ để các controller hiện tại tiếp tục hoạt động, nhưng nguồn dữ liệu bền vững là MongoDB Atlas. Mọi API response đều chờ commit MongoDB thành công. `application_state` giữ snapshot chuẩn; các collection nghiệp vụ được đồng bộ riêng để có thể kiểm tra trong Atlas. MongoDB mất kết nối hoặc ghi thất bại thì API trả HTTP 503, không có JSON fallback.

@@ -32,5 +32,5 @@ Thực hiện trên môi trường local/dev trước, với dữ liệu test. K
 ## Trước khi push
 - [ ] Chạy `npm run lint`.
 - [ ] Chạy `npm run build` trên Windows.
-- [ ] Kiểm tra `git status --short`; không stage `.env`, `.files.env`, `data/db.json`, backup JSON, `dist` hoặc `node_modules`.
-- [ ] Xác nhận backend đang dùng nguồn lưu dữ liệu phù hợp môi trường; không bỏ qua cảnh báo JSON fallback.
+- [ ] Kiểm tra `git status --short`; không stage `.env`, `.files.env`, `data/db.legacy.backup`, `dist` hoặc `node_modules`.
+- [ ] Xác nhận `MONGODB_URI` hợp lệ; thử tắt MongoDB và xác nhận API trả HTTP 503, không ghi dữ liệu vào nguồn thay thế.
